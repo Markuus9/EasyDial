@@ -1,0 +1,314 @@
+// $Id: gen_driver.hpp 132 2005-09-16 13:03:47Z conrado $
+// (C) Conrado Martinez Parra, Diciembre, 2003
+
+#ifndef _GEN_DRIVER_HPP
+#define _GEN_DRIVER_HPP
+
+#include <map>
+#include <string>
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <typeinfo>
+
+#include <esin/util>
+#include <esin/mem_din>
+
+
+using util::nat;
+using std::string;
+using std::istream;
+using std::ostream;
+using std::map; 
+using std::vector;
+using std::ofstream;  
+
+typedef void* DataStructure;
+
+template <typename T>
+DataStructure _initcopy(DataStructure p) {
+  return static_cast<void*>(new T(*(static_cast<T*>(p))));
+}
+
+template <typename T>
+void _copy(DataStructure dest, DataStructure orig) {
+  *static_cast<T*>(dest) = *static_cast<T*>(orig);
+}
+  
+template <typename T>
+void _destroy(DataStructure p) {
+  delete static_cast<T*>(p);
+}
+
+template <typename T>
+void _defctor(T*& p) {
+  p = new T();
+}
+
+template <typename T> class TypeTraits {
+public:
+  static const char* name;
+};
+
+
+class gen_driver {
+public : 
+  typedef void (*DriverFunction)(gen_driver&); 
+  typedef bool (*MemTestFunction)(gen_driver&);
+  typedef bool (*CheckFunction)(const string&);
+  typedef void (*BuildFunct)(void*&);
+
+  gen_driver(const string& error_filename = "", bool active_memdin = true,
+	     bool echoing = true, istream& is = std::cin, 
+	     ostream& os = std::cout);
+  ~gen_driver();
+
+  void add_call(const string& fname, DriverFunction f, 
+                const string& applies_to = "*",
+                const string& type_args = "",
+		const string& helpmsg = "");
+
+  void add_check(const string& tid, CheckFunction f);
+
+  template <typename T>
+  string type_name() {
+    return string(TypeTraits<T>::name);
+  }
+  
+  template <typename T>
+  void add_memory_test(MemTestFunction tmf, const string& _class = "") {
+    string theclass = _class != "" ? _class : type_name<T>();
+    _tm[theclass].push_back(tmf);
+  }
+
+  template <typename T>
+  void install_type(const string& _class = "") {
+    string theclass = _class != "" ? _class : type_name<T>();
+    _copyctor[theclass] = _initcopy<T>;
+    _assignment[theclass] = _copy<T>; 
+    _dtor[theclass] = _destroy<T>;
+  }
+
+  template <typename T>
+  void install_std_type(const string& _class = "") {
+    string theclass = _class != "" ? _class : type_name<T>();
+    _dtor[theclass] = _destroy<T>;
+  }
+  
+  template <typename T>
+  bool generic_memtest(void (*_build)(T*&), const string& _msg, 
+		                            const string& _class = "") {
+    string theclass = _class != "" ? _class : type_name<T>();
+    return generic_memtest(reinterpret_cast<BuildFunct>(_build),
+			   theclass, _msg);
+  }
+
+  template <typename T>
+  bool copyctor_memtest(void (*_build)(T*&), const string& _class = "") {
+    string theclass = _class != "" ? _class : type_name<T>();
+    return copyctor_memtest(reinterpret_cast<BuildFunct>(_build), theclass);
+  }
+
+  template <typename T>
+  bool assgn_memtest(void (*_build1)(T*&), void (*_build2)(T*&),
+		     const string& _class = "") {
+    string theclass = _class != "" ? _class : type_name<T>();
+    return assgn_memtest(reinterpret_cast<BuildFunct>(_build1),
+			 reinterpret_cast<BuildFunct>(_build2),
+			 theclass);
+  }
+
+  template <typename T>
+  T* object(const string& obj_name) {
+    if (_obj.find(obj_name) == _obj.end()) {
+      throw error(NoObj, nom_mod, NoObjMsg);
+    }
+    return static_cast<T*>(_obj[obj_name]);
+  }
+
+  template <typename T>
+  T* object(int i) {
+    if (_obj.find(_il->args(i)) == _obj.end()) {
+      throw error(NoObj, nom_mod, NoObjMsg);
+    }
+    return static_cast<T*>(_obj[_il->args(i)]);
+  }
+
+  template <typename T> 
+  T* object() {
+    return static_cast<T*>(_obj[_il->object()]);
+  }
+
+  const string& object_type(const string& obj_name);
+  const string& object_type();
+  const string& object_type(int i);
+  bool has_type(int i);
+
+  const string& args(int i);
+  nat nargs();
+
+  void go();
+  
+  istream& get_istream() const { return _isdriv; };
+  ostream& get_ostream() const { 
+    if (_echoing) 
+      return _osdriv; 
+    else 
+      if (_null_stream == NULL)
+	_null_stream = new ofstream("/dev/null");
+    return *_null_stream;
+  };
+
+  bool echoing() const { return _echoing; };
+
+  void init();
+  void copy();
+  void initcopy();
+  void destroy();
+  void clear_all();
+  void test_memory();
+  void set_memory();
+  void print_memory();
+  void memory(bool);
+  void echo();
+  void load();
+  void apply();
+  void help();
+  void select_curr_obj();
+  void list_objects();
+  void curr_obj_name();
+  void applies_to();
+  void known_types();
+  void echo_output();
+  void echo_input();
+  void timer_on();
+  void timer_off();
+  void iter();
+
+  // gestion de errores
+  static const int NoOp          = 1;
+  static const int WrongNumArgs  = 2;
+  static const int WrongTypeArgs = 3;
+  static const int NoObj         = 4;
+  static const int WrongTypeObj  = 5;
+  static const int NoFile        = 6;
+
+  static const string nom_mod;
+  static const string NoOpMsg;
+  static const string WrongNumArgsMsg;
+  static const string WrongTypeArgsMsg;
+  static const string NoObjMsg;
+  static const string WrongTypeObjMsg;
+  static const string NoFileMsg;
+
+private : 
+
+  class input_line {
+  public :      
+    input_line(ostream& echo_ostream = std::cout) : 
+      _echo_stream(echo_ostream) {};
+
+    input_line& operator=(const input_line& L) {
+      if(this != &L) {
+	_args = L._args;
+	_orig = L._orig;
+	_object = L._object;
+	_op = L._op;
+      }
+      return *this;
+    }
+    
+    util::nat nargs() const { return static_cast<util::nat>(_args.size()); };
+    const string& args(int i) const throw(error);
+    void push_back(const input_line& L);
+    void push_back(const string& s);
+    
+    const string& object() const            { return _object; }
+    const string& op() const                { return _op; }
+    void set_object(const string& s) { _object = s; };
+    void set_op(const string& s)     { _op = s; };
+    void shift_args(int i);
+    
+    static void echo_on()   { input_line::_echoing = true; };
+    static void echo_off()  { input_line::_echoing = false; };
+    static bool echoing()   { return input_line::_echoing; }; 
+    
+    void read(istream& is);
+    void write(ostream& os) const;
+    
+    const static string nom_mod;
+    const static int ArgNoExiste       = 8;
+    const static string ArgNoExisteMsg;
+    
+  private:
+
+    static bool _echoing;  
+    static const int MAX_LINE_LENGTH = 20000;
+    ostream& _echo_stream;
+    vector<string> _args;
+    vector<string> _orig;
+    string _object;
+    string _op;
+  };
+
+  typedef void* (*CopyCtorFunction)(void*);
+  typedef void  (*AsgnFunction)(void*, void*);
+  typedef void (*DtorFunction)(void*);
+
+  typedef map<string, DriverFunction> DriverFunctTbl;
+  typedef map<string, CheckFunction>  CheckFunctTbl;
+  typedef map<string, DataStructure> ObjTbl;
+  typedef map<string, string> TypeTbl;
+  typedef map<string, string> AppliesToTbl;
+  typedef map<string, string> HelpTbl;
+  typedef map<string, vector<string> > ArgTypeTbl;
+  
+  typedef map<string, CopyCtorFunction> CopyCtorTbl;
+  typedef map<string, AsgnFunction> AsgnTbl;
+  typedef map<string, DtorFunction> DtorTbl;
+  typedef map<string, vector<MemTestFunction> > MemTestTbl;
+
+  DriverFunctTbl _funct;
+  CheckFunctTbl _check;
+  HelpTbl _help;
+  ArgTypeTbl _type_args;
+  ObjTbl _obj;
+  TypeTbl _type;
+  AppliesToTbl _applies_to;
+
+  CopyCtorTbl _copyctor;
+  AsgnTbl _assignment;
+  DtorTbl _dtor;
+  MemTestTbl _tm;
+
+  string _curr_obj;
+  input_line* _il;
+  
+  bool _echoing;
+  bool _memdin;
+
+  istream& _isdriv;
+  ostream& _osdriv;
+
+  static ofstream* _null_stream;
+
+  void process_operation(input_line* L);     
+  string build_help_message(const string& op);
+  bool generic_memtest(BuildFunct b, const string& cl, const string& msg);
+  bool copyctor_memtest(BuildFunct b, const string& cl);
+  bool assgn_memtest(BuildFunct b1, BuildFunct b2, const string& cl);
+  void test_memory(const string& cl);
+
+  // copy-ctor y asignacion privadas
+  gen_driver(const gen_driver& d): _isdriv(d._isdriv), _osdriv(d._osdriv) {};
+  gen_driver& operator=(const gen_driver&) { return *this; }
+
+};
+
+template <typename T>
+bool test_defctor(gen_driver& d) {
+  return d.generic_memtest(_defctor<T>, "default ctor");
+}
+#endif
+
+

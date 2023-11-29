@@ -1,0 +1,365 @@
+// $Id: util.hpp 82 2005-03-03 09:20:28Z conrado $
+
+#ifndef _UTIL_HPP
+#define _UTIL_HPP
+
+#include <string>
+#include <vector>
+#include <list>
+#include <esin/error>
+#include <sys/time.h>
+#include <utility>
+
+namespace util {
+  using std::string;
+  using std::ostream;
+  using std::vector;
+  
+  // typedef's convenientes
+  //   nat   sirve para representar numeros enteros positivos
+  //   byte  es un sinonimo de char; ocupa el minimo espacio posible
+  typedef unsigned int nat;       
+  typedef unsigned char byte;
+
+  // funciones para activar/desactivar el cronometro
+  // stop_time() devuelve el tiempo en segundos transcurrido
+  // desde la ultima invocacion de start_time()
+  void start_time() throw();
+  double stop_time() throw();
+
+  // funciones de conversion de tipos numericos a string, e.g.
+  // util::tostring(-1.245) = "-1.245"
+  string tostring(long int n) throw();
+  string tostring(int n) throw();
+  string tostring(double x) throw();
+
+  // funciones de conversion de un string a un tipo numerico, e.g.
+  // util::toint("+39701") = 39701
+  // lanzan excepciones de la clase 'error' si el string no
+  // representa un valor correcto del tipo correspondiente
+  // las funciones is_-tipo-(s) devuelven cierto si y solo si
+  // el string s representa a un valor del -tipo-
+  int toint(const string& s) throw (error);
+  double todouble(const string& s) throw (error);
+
+  bool is_nat(const string& s) throw();
+  bool is_int(const string& s) throw();
+  bool is_double(const string& s) throw();
+
+  // pack(s) convierte un string de 8 0's o 1's en el correspondiente
+  // byte; unpack(b) devuelve el string de 0's y 1's que corresponde
+  // al byte b
+  byte pack(const string& s) throw(error);
+  string unpack(byte c) throw();
+
+  // dado un string que contiene una secuencia de palabras w_1 ... w_n
+  // separadas por blancos, devuelve un vector x con las palabras, es
+  // decir, x[0] = w_1, x[1] = w_2, x[2] = w_3, ..., x[n-1] = w_n
+  // el argumento puede ser de tipo string (C++) o char* (C); si la
+  // cadena de caracteres se da como char* entonces
+  // debe estar acabada con '\0'
+  void split(const string& s, vector<string>& x) throw();
+  void split(char* line, vector<string>& x) throw();
+
+
+  // Generacion de numeros aleatorios
+  // Uso:
+  // Random R; // creamos un generador de numeros aleatorios (GNA)
+  // int m = R(a,b); // devuelve un entero en el rango [a..b]
+  // int u = R(n);   // devuelve un entero en el rango [0..n-1]
+  // double x = R(); // devuelve un numero real entre 0 y 1
+  // Random R2(314159); // creamos un GNA inicializado con la
+  //                    // 'semilla' 314159
+  // 
+  // Fijada una semilla el GNA siempre produce
+  // los mismos numeros aleatorios; esto es ventajoso si queremos
+  // reproducir la ejecucion de un algoritmo que usa un GNA todas las
+  // veces que queremos; cuando la semilla no se da al crear el GNA,
+  // se toma como semilla el tiempo que lleva el computador encendido
+  // lo que nos da una impresion de aletoriedad: diferentes
+  // ejecuciones, usaran semillas distintas (= tiempos distintos) y
+  // los numeros aleatorios generados en cada caso seran diferentes.
+  //
+  // Se implementa mediante el metodo desarrollado por D. E. Knuth para la
+  // Stanford GraphBase                   
+
+    class Random {
+      public :
+        Random(long seed = time(0));
+        long operator()(long a, long b) throw (error);  
+        long operator()(long n) throw (error);         
+      double operator()() throw();      
+    private :
+        long A[56];
+        long* fptr;
+
+        void init_rand(long);
+        long cycle(); 
+        inline long rand() { 
+             return *fptr >= 0 ? *fptr-- : cycle(); 
+        }
+  };
+
+
+  // "Funciones" de hash genericas; se basan en la implementacion de
+  // SGI
+  // Un 'Hash' es en realidad un objeto sobre el que se puede aplicar
+  // el operador (), y en consecuencia se puede usar igual que una funcion,
+  // e.g.
+  //
+  // util::Hash<string> h;
+  // string s;
+  // unsigned long i = h(s);
+  // 
+  // Alternativamente se puede usar la siguiente sintaxis:
+  // string s;
+  // unsigned long i = util::hash(s);
+  //
+  // Hash<T> esta definido (mediante especializacion parcial de
+  // templates) para los tipos T siguientes: string, const char*,
+  // char*, char, unsigned char, signed char, short, unsigned short,
+  // int, unsigned int (= nat), long, unsigned long, double y float. 
+  // 
+  // Adicionalmente si Hash<T> esta definido para T entonces
+  // Hash<T*>, Hash<const T*>, 
+  // Hash<vector<T> > y Hash<list<T> > tambien lo estan; y si 
+  // Hash<T1> y Hash<T2> estan definidos para T1 y T2, entonces
+  // Hash<pair<T1,T2> > tambien lo esta.
+
+  using std::vector; 
+  using std::list;
+  using std::pair;
+
+  template<class _Key>
+    struct Hash { };
+
+  template <class _Key>
+    struct Hash<vector<_Key> >
+    {
+      unsigned long
+      operator()(const vector<_Key>& v) const
+      {
+	typename vector<_Key>::const_iterator p = v.begin();
+	Hash<_Key> hfun;
+	unsigned long h = 0;
+	while (p != v.end()) {
+	  h = 5 * h + hfun(*p);
+	  ++p;
+	}
+	return h;
+      }
+    };
+
+  template <class _Key>
+    struct Hash<list<_Key> >
+    {
+      unsigned long
+      operator()(const list<_Key>& v) const
+      {
+	typename list<_Key>::const_iterator p = v.begin();
+	Hash<_Key> hfun;
+	unsigned long h = 0;
+	while (p != v.end()) {
+	  h = 5 * h + hfun(*p);
+	  ++p;
+	}
+	return h;
+      }
+    };
+
+  template<class _Key1, class _Key2>
+    struct Hash<pair<_Key1,_Key2> >
+    {
+      unsigned long
+      operator()(const pair<_Key1,_Key2>& p) const
+      {
+	Hash<_Key1> h1;
+	Hash<_Key2> h2;
+	return 5 * h1(p.first) + h2(p.second);
+      }
+    };
+
+  template<class _Key>
+    struct Hash<_Key*>
+    {
+      unsigned long operator()(_Key* pK) const {
+	Hash<_Key> h;
+	return h(*pK);
+      }
+    };
+
+   template<class _Key>
+     struct Hash<const _Key>
+     {
+       unsigned long operator()(const _Key& K) const {
+ 	Hash<_Key> h;
+ 	return h(K);
+       }
+     };
+
+   template<class _Key>
+     struct Hash<_Key&>
+     {
+       unsigned long operator()(const _Key& K) const {
+ 	Hash<_Key> h;
+ 	return h(K);
+       }
+     };
+
+  inline long Hash_string(const char* __s)
+  {
+    unsigned long __h = 0;
+    for ( ; *__s; ++__s)
+      __h = 5 * __h + *__s;
+    return __h;
+  }
+
+  template<>
+    struct Hash<string>
+    {
+      unsigned long operator()(const string& s) const
+      { 
+	return Hash_string(s.c_str()); }
+    };
+      
+  template<>
+    struct Hash<char*>
+    {
+      unsigned long operator()(const char* __s) const
+      {
+	return Hash_string(__s); 
+      }
+    };
+
+  template<>
+    struct Hash<const char*>
+    {
+      unsigned long operator()(const char* __s) const
+      { 
+	return Hash_string(__s); 
+      }
+    };
+
+  template<>
+    struct Hash<char>
+    { 
+      unsigned long operator()(char __x) const
+      { 
+	return __x; 
+      }
+    };
+
+  template<>
+    struct Hash<unsigned char>
+    { 
+      unsigned long operator()(unsigned char __x) const
+      {
+	return __x; 
+      }
+    };
+
+  template<>
+    struct Hash<signed char>
+    {
+      unsigned long operator()(unsigned char __x) const
+      { 
+	return __x; 
+      }
+    };
+
+  template<>
+    struct Hash<short>
+    {
+      unsigned long operator()(short __x) const
+      {
+	return __x; 
+      }
+    };
+
+  template<>
+    struct Hash<unsigned short>
+    {
+      unsigned long operator()(unsigned short __x) const
+      {
+	return __x; 
+      }
+    };
+
+  template<>
+    struct Hash<int>
+    { 
+      unsigned long operator()(int __x) const 
+      { 
+	return __x; 
+      }
+    };
+
+  template<>
+    struct Hash<unsigned int>
+    { 
+      unsigned long operator()(unsigned int __x) const
+      {
+	return __x; 
+      }
+    };
+
+  template<>
+    struct Hash<long>
+    {
+      unsigned long operator()(long __x) const
+      {
+	return __x; 
+      }
+    };
+
+  template<>
+    struct Hash<unsigned long>
+    {
+      unsigned long operator()(unsigned long __x) const
+      {
+	return __x; 
+      }
+    };
+
+  template<>
+    struct Hash<double>
+    {
+      unsigned long operator()(double __x) const
+      {
+	long pent = long(__x); 
+	long pdec = long(100000 * (__x + ((__x < 0) ? pent : - pent)));
+	Hash<pair<long,long> > h;
+	return h(std::make_pair(pent,pdec)); 
+      }
+    };
+
+  template<>
+    struct Hash<float>
+    {
+      unsigned long operator()(float __x) const
+      {
+	Hash<double> h;
+	return h(__x); 
+      }
+    };
+
+  // utility functions
+  template <class T>
+  unsigned long hash(T& x) {
+    util::Hash<T> h;
+    return h(x);
+  }
+
+  template <class T>
+  unsigned long hash(const T& x) {
+    util::Hash<T> h;
+    return h(x);
+  }
+
+  // fin de las 'funciones' hash
+
+  // constante utilizada para la gestion de las excepciones
+  // lanzadas desde este modulo
+  const string nom_mod = "util";
+}
+#endif

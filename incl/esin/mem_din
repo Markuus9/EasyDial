@@ -1,0 +1,45 @@
+// $Id: mem_din.hpp 82 2005-03-03 09:20:28Z conrado $
+
+#ifndef _MEM_DIN_HPP
+#define _MEM_DIN_HPP
+
+#include <iostream>
+#include <string>
+#include <esin/error>
+
+namespace mem_din {
+  using std::string;
+  using std::ostream;
+
+  // parametros por defecto de la memoria dinamica
+  const int DEFAULT_MAX_CHUNKS = 1000;
+  const long DEFAULT_MAX_SIZE  = 320000;
+
+  void switch_on() throw();
+  void switch_off() throw();
+  bool active() throw();
+  
+  void set_parameters(int max_chunks, 
+                         long max_size) throw(error);
+
+  void print_memory_status_report(ostream& os = std::cout, 
+                                 int vb_level = 1) throw();
+  int nr_chunks() throw();
+  int nr_bytes() throw();
+  int nr_news() throw();
+  int nr_del_no_new() throw();
+  int max_chunks() throw();
+  int max_bytes() throw();
+
+  const string nom_mod = "mem_din";
+  const int FaltaMemoriaDin = 10;
+  const int CreacionPoolIncorrecta = 11;
+  const int MemDinNoConfigurable   = 12;
+  const int ParMemDinIncorrectos   = 13;
+  const string MsgFaltaMemoriaDin = "Memoria dinámica insuficiente";
+  const string MsgMemDinNoConfigurable = 
+  "No se puede reconfigurar la memoria";
+  const string MsgParMemDinIncorrectos = 
+  "Parámetros de reconfiguración incorrectos";
+};
+#endif
