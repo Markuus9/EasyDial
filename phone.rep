@@ -1,14 +1,12 @@
 // Número de telèfon
-nat num;
+nat _num;
 // Els números de telèfon tenen un nombre de dígits qualsevol, però no poden tenir valor nul
 
 // Nom associat al número
-string n;
+string _n;
 // Els noms associats als números de telèfon estan formats per una seqüència de caràcters,
 // exceptuant els caràcters DELETECHAR = ‘<’, ENDCHAR = ‘|’ i ENDPREF = ‘\0’, i no tenen
 // una longitud màxima. Poden ser buits.
 
 // Comptador de freqüència 
-nat freq;
-
-
+nat _freq;
