@@ -4,7 +4,7 @@ phone::phone(nat num, const string& name, nat compt) throw(error) : _num(num), _
 	nat mida = name.size();
 	for (nat i = 0; i < mida; ++i) {
 		if (name[i] == DELETECHAR or name[i] == ENDCHAR or name[i] == ENDPREF) {
-			throw ErrNomIncorrecte;
+			throw error(ErrNomIncorrecte);
 		}
 	}
 	// Si tots els caràcters de name són legals, no es produeix cap error
