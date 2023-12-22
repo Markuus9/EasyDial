@@ -1,0 +1,30 @@
+// call_registry serà representat mitjançant una taula de dispersió amb sinònims encadenats indirectes.
+// Això farà que les consultes siguin molt eficients, però les insercions i eliminacions, en el cas pitjor,
+// tindran cost lineal respecte el nombre d'elements de call_registry degut a la redispersió.
+
+// Si el factor de càrrega (definit com el nombre d'elements de claus de la taula de dispersió dividit entre
+// la mida de la taula) és major que 0.8 o menor que 0.2, es realitzarà una redispersió dels elements. En
+// el primer cas, la mida de la taula serà el doble de gran. En l'altre cas, la mida de la taula es reduirà a
+// la meitat.
+
+// Per reduir el cost de les cerques sense èxit, els sinònims de cada llista estaran ordenats per clau de
+// forma ascendent.
+
+struct node_taula {
+	int _k;	// clau, que serà l'atribut _num del phone p
+	phone _p; // informació associada a la clau _k
+	node_taula* _seg; // punter al següent element de la llista simplement encadenada
+};
+
+
+node_taula** _taula; // taula amb punters a les llistes de sinònims
+int _M; // nombre de punters a llistes simplement encadenades que conté _taula (mida de la taula)
+int _nelem; // nombre de claus, cadascuna amb el seu valor associat, que conté la taula
+
+// Retorna un punter al primer element d'una llista simplement encadenada,
+// que és una copia de la llista apuntada per pcopia
+static node_taula* copia_nodes(node_taula* pcopia);
+
+// Esborra tots els elements de la llista simplement encadenada
+// encadenada apuntada per p
+static void esborra_nodes(node_taula* p);
