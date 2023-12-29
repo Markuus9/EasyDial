@@ -1,17 +1,99 @@
 #include "easy_dial.hpp"
+
+// Retorna un node amb la copia de la informacio de pcopia;;
+  easy_dial::node_dial* easy_dial::copiar_nodes(node_dial* &node_original){
+    if (node_original == nullptr) {
+      return nullptr;
+    }
+
+    // Crear un nou node
+    node_dial* node_nou = new node_dial;
+    node_nou->_n = node_original->_n;
+
+    // Copiem recursivament les breanques
+    node_nou->_esq = copiar_nodes(node_original->_esq);
+    node_nou->_dret = copiar_nodes(node_original->_dret);
+
+    return node_nou;
+  }
+
+// Esborra tots els elements del arbre apuntat per p
+  void easy_dial::esborra_nodes(node_dial* p){
+    if(p!=nullptr){
+      esborra_nodes(p->_dret);
+      esborra_nodes(p->_esq);
+      delete p;
+    }
+  }
+
 /* Construeix un easy_dial a partir de la 
   informació continguda en el call_registry donat. El
   prefix en curs queda indefinit. */
-  easy_dial::easy_dial(const call_registry& R) throw(error){}
+  easy_dial::easy_dial(const call_registry& R) throw(error){
+    // Inicialitzar el prefix en curs com indefinit
+    _prefix = "";
+
+    vector<phone> v; // Creem el vector de phones
+    R.dump(v); // Fem un bolcat de tots el phones de R
+
+    if(v.size()>0){
+      _arrel = new node_dial;
+      _arrel->_n = v[0].nom();
+      int M = v.size();
+
+      node_dial* p(_arrel);
+      for (int i = 0; i < M; ++i) {
+        node_dial* pnou = new node_dial;
+        pnou->_dret = nullptr;
+        pnou->_esq = nullptr;
+        pnou->_n = v[i].nom();
+        if(pnou->_n > p->_n){
+          p->_dret = pnou;
+        } else {
+          p->_esq = pnou;
+        }
+      }
+    } else {
+      _arrel = nullptr;
+    }
+  }
 
   /* Tres grans. Constructor per còpia, operador d'assignació i destructor. */
-  easy_dial::easy_dial(const easy_dial& D) throw(error){}
-  easy_dial::easy_dial& operator=(const easy_dial& D) throw(error){}
-  easy_dial::~easy_dial() throw(){}
+  easy_dial::easy_dial(const easy_dial& D) throw(error){
+    _prefix = D._prefix;
+
+    // Copiar recursivamente la estructura del TST
+    _arrel = copiar_nodes(D._arrel);
+  }
+
+  easy_dial& easy_dial::operator=(const easy_dial& D) throw(error){
+    if (this != &D) {
+      esborra_nodes(_arrel);
+      _prefix = D._prefix;
+      _arrel = new node_dial;
+      _arrel = copiar_nodes(D._arrel);
+	  }
+	  return (*this);
+  }
+
+  easy_dial::~easy_dial() throw(){
+    esborra_nodes(_arrel);
+  }
 
   /* Inicialitza el prefix en curs a buit. Retorna el nom de F(S, ''){}
   si F (S, '') no existeix llavors retorna l'string buit. */
-  string easy_dial::inici() throw(){}
+  string easy_dial::inici() throw(){
+    _prefix = "";
+    string result;
+    
+    /*if(_arrel!=nullptr){
+      result = _arrel->_n;
+    } else {
+      result = "";
+    }*/
+
+    return result;
+  }
 
   /* Retorna el nom de F(S, p') on p' és el prefix resultant d'afegir
   el caràcter c al final del prefix en curs p i
@@ -22,7 +104,10 @@
   llavors es produeix un error i el prefix en curs queda indefinit. 
   Naturalment, es produeix un error si el prefix en curs inicial p 
   fos indefinit. */
-  string easy_dial::seguent(char c) throw(error){}
+  string easy_dial::seguent(char c) throw(error){
+    _prefix.push_back(c);
+    return
+  }
 
   /* Elimina l'últim caràcter del prefix en curs p = p' · a
   (a és el caràcter eliminat). Retorna el nom F(S, p') 
@@ -30,7 +115,9 @@
   Es produeix un error si p fos buida i si es fa que el prefix en curs
   quedi indefinit. Òbviament, també es produeix un error 
   si p fos indefinit. */
-  string easy_dial::anterior() throw(error){}
+  string easy_dial::anterior() throw(error){
+    _prefix.pop_back()
+  }
 
   /* Retorna el número de telèfon de F(S, p), sent p
   el prefix en curs. Es produeix un error si p és indefinit o si

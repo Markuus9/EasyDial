@@ -1,0 +1,19 @@
+// easy_dial serà representat mitjançant arbre binari de cerca.
+
+struct node_dial { 
+    string _n; // clau amb la informació del nom actual
+    node_dial* _esq; // branca esquerra
+    node_dial* _dret; // branca dreta 
+};
+
+// punter a l'arrel de l'arbre
+node_dial* _arrel;
+
+// Prefix utilitzat per fer la cerca dels noms.
+string _prefix;
+
+// Retorna un node amb la copia de la informacio de pcopia;
+static node_dial* copiar_nodes(node_dial* &node_original);
+
+// Esborra tots els elements del arbre.
+static void esborra_nodes(node_dial* p);

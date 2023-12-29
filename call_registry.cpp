@@ -36,10 +36,10 @@ int call_registry::hash(const nat &x) {
 call_registry::call_registry() throw(error) {
 	_M = 5;
 	_nelem = 0;
-  _taula = new node_taula*[_M];
-  for (int i=0; i < _M; ++i) {
-    _taula[i] = nullptr;
-  }
+  	_taula = new node_taula*[_M];
+  	for (int i=0; i < _M; ++i) {
+   	 _taula[i] = nullptr;
+  	}
 }
 
 call_registry::call_registry(const call_registry& R) throw(error) {
