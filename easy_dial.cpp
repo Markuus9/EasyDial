@@ -9,10 +9,13 @@
     // Crear un nou node
     node_dial* node_nou = new node_dial;
     node_nou->_n = node_original->_n;
+    node_nou->_p = node_original->_p;
 
     // Copiem recursivament les breanques
     node_nou->_esq = copiar_nodes(node_original->_esq);
+    node_nou->_esq->_pare = node_nou;
     node_nou->_dret = copiar_nodes(node_original->_dret);
+    node_nou->_dret->_pare = node_nou;
 
     return node_nou;
   }
@@ -46,6 +49,7 @@
         node_dial* pnou = new node_dial;
         pnou->_dret = nullptr;
         pnou->_esq = nullptr;
+        pnou->_p = v[i];
         pnou->_n = v[i].nom();
         if(pnou->_n > p->_n){
           p->_dret = pnou;
@@ -55,12 +59,15 @@
       }
     } else {
       _arrel = nullptr;
+      _actual = nullptr;
     }
   }
 
   /* Tres grans. Constructor per còpia, operador d'assignació i destructor. */
   easy_dial::easy_dial(const easy_dial& D) throw(error){
     _prefix = D._prefix;
+    _actual = D._actual;
+    _arrel->_pare = nullptr;
 
     // Copiar recursivamente la estructura del TST
     _arrel = copiar_nodes(D._arrel);
@@ -70,6 +77,7 @@
     if (this != &D) {
       esborra_nodes(_arrel);
       _prefix = D._prefix;
+      _actual = D._actual;
       _arrel = new node_dial;
       _arrel = copiar_nodes(D._arrel);
 	  }
@@ -84,14 +92,13 @@
   si F (S, '') no existeix llavors retorna l'string buit. */
   string easy_dial::inici() throw(){
     _prefix = "";
+    _actual = _arrel;
     string result;
-    
-    /*if(_arrel!=nullptr){
+    if(_arrel!=nullptr){
       result = _arrel->_n;
     } else {
       result = "";
-    }*/
-
+    }
     return result;
   }
 
@@ -105,8 +112,22 @@
   Naturalment, es produeix un error si el prefix en curs inicial p 
   fos indefinit. */
   string easy_dial::seguent(char c) throw(error){
-    _prefix.push_back(c);
-    return
+    string res;
+    if(_actual!=nullptr){
+      _prefix.push_back(c);
+      if(_prefix > _actual->_n){
+        res = _actual->_dret->_n;
+        _actual = _actual->_dret;
+      } else if(_prefix < _actual->_n){
+        res = _actual->_esq->_n;
+        _actual = _actual->_esq;
+      } else {
+        res = _actual->_n;
+      }
+    } else {
+      throw error(ErrPrefixIndef);
+    }
+    return res;
   }
 
   /* Elimina l'últim caràcter del prefix en curs p = p' · a
@@ -116,13 +137,33 @@
   quedi indefinit. Òbviament, també es produeix un error 
   si p fos indefinit. */
   string easy_dial::anterior() throw(error){
-    _prefix.pop_back()
+    string res;
+    if(_actual!=nullptr){
+      if(_prefix==""){
+        throw error(ErrNoHiHaAnterior);
+      } else {
+        _prefix.pop_back();
+        _actual = _actual->_pare;
+        res = _actual->_n;
+      }
+    } else {
+      throw error(ErrPrefixIndef);
+    }
+    return res;
   }
 
   /* Retorna el número de telèfon de F(S, p), sent p
   el prefix en curs. Es produeix un error si p és indefinit o si
   no existeix F(S, p). */
-  nat easy_dial::num_telf() const throw(error){}
+  nat easy_dial::num_telf() const throw(error){
+    nat res;
+    if(_actual!=nullptr){
+      res = _actual->_p.numero();
+    } else {
+      throw error(ErrPrefixIndef);
+    }
+    return res;
+  }
 
   /* Retorna en el vector result tots els noms dels contactes de 
   telèfon que comencen amb el prefix pref, en ordre lexicogràfic creixent. */

@@ -76,7 +76,7 @@ call_registry::~call_registry() throw() {
 }
 
 void call_registry::registra_trucada(nat num) throw(error) {
-	int i = hash(num);
+	int i = hash(num) % _M;
 	node_taula* t = _taula[i];
 	bool hi_es = false;
 	while (t != nullptr and not hi_es) {
@@ -93,13 +93,13 @@ void call_registry::registra_trucada(nat num) throw(error) {
 		phone p(num, "", 1);
 		nou->_p = p;
 		nou->_k = num;
-		_taula[i] = nou; 
+		t = nou; 
 		++_nelem;
 	}
 }
 
 void call_registry::assigna_nom(nat num, const string& name) throw(error) {
-	int i = hash(num);
+	int i = hash(num) % _M;
 	node_taula* t = _taula[i];
 	bool hi_es = false;
 	while (t != nullptr and not hi_es) {
@@ -149,7 +149,7 @@ void call_registry::elimina(nat num) throw(error) {
 }
 
 bool call_registry::conte(nat num) const throw() {
-	int i = hash(num);
+	int i = hash(num) % _M;
 	node_taula* t = _taula[i];
 	bool hi_es = false;
 	while (t != nullptr and not hi_es) {
@@ -163,7 +163,7 @@ bool call_registry::conte(nat num) const throw() {
 }
 
 string call_registry::nom(nat num) const throw(error) {
-	int i = hash(num);
+	int i = hash(num) % _M;
 	string nom = "";
 	node_taula* t = _taula[i];
 	bool hi_es = false;
@@ -183,7 +183,7 @@ string call_registry::nom(nat num) const throw(error) {
 }
 
 nat call_registry::num_trucades(nat num) const throw(error) {
-	int i = hash(num);
+	int i = hash(num) % _M;
 	nat freq;
 	node_taula* t = _taula[i];
 	bool hi_es = false;
@@ -211,7 +211,84 @@ nat call_registry::num_entrades() const throw() {
 }
 
 void call_registry::dump(vector<phone>& V) const throw(error) {
-	for(int i = 0; i<_nelem; ++i){
-		// Por implementar ya que hay varias opciones a mirar.
-	}
+	// Crear un vector temporal para almacenar los phones
+    vector<phone> tempVector;
+
+    // Iterar sobre la tabla de dispersión y copiar los phones no nulos
+    for (int i = 0; i < _M; ++i) {
+        node_taula* current = _taula[i];
+        while (current != nullptr) {
+            // Verificar que el nombre no sea nulo
+            if (current->_p.nom() != "") {
+                // Agregar el phone al vector temporal
+                tempVector.push_back(current->_p);
+            }
+            current = current->_seg;
+        }
+    }
+
+	// Ordenar el vector temporal utilizando QuickSort
+    mergeSort(tempVector, 0, tempVector.size() - 1);
+
+    // Verificar que todos los nombres sean diferentes
+    for (size_t i = 1; i < tempVector.size(); ++i) {
+        if (tempVector[i - 1] == tempVector[i]) {
+            throw error(ErrNomRepetit);
+        }
+    }
+
+    // Copiar el contenido del vector temporal al vector de salida
+    V = tempVector;
+}
+
+// Implementación del algoritmo MergeSort
+void call_registry::mergeSort(vector<phone>& arr, int low, int high) {
+    if (low < high) {
+        int mid = low + (high - low) / 2;
+        mergeSort(arr, low, mid);
+        mergeSort(arr, mid + 1, high);
+        merge(arr, low, mid, high);
+    }
+}
+
+void call_registry::merge(vector<phone>& arr, int low, int mid, int high) {
+    int n1 = mid - low + 1;
+    int n2 = high - mid;
+
+    vector<phone> L(n1);
+    vector<phone> R(n2);
+
+    for (int i = 0; i < n1; i++) {
+        L[i] = arr[low + i];
+    }
+    for (int j = 0; j < n2; j++) {
+        R[j] = arr[mid + 1 + j];
+    }
+
+    int i = 0;
+    int j = 0;
+    int k = low;
+
+    while (i < n1 && j < n2) {
+        if (L[i] < R[j]) {
+            arr[k] = L[i];
+            i++;
+        } else {
+            arr[k] = R[j];
+            j++;
+        }
+        k++;
+    }
+
+    while (i < n1) {
+        arr[k] = L[i];
+        i++;
+        k++;
+    }
+
+    while (j < n2) {
+        arr[k] = R[j];
+        j++;
+        k++;
+    }
 }

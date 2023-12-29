@@ -32,3 +32,7 @@ static void esborra_nodes(node_taula* p);
 // Funcio de dispersió que retorna Bits centrals
 // del quadrat del número multiplicat per PI.
 static int hash(const nat &x);
+
+// Función auxiliar para realizar el ordenamiento MergeSort
+static void mergeSort(std::vector<phone>& arr, int low, int high);
+static void merge(std::vector<phone>& arr, int low, int mid, int high); 

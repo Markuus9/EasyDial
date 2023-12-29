@@ -2,8 +2,10 @@
 
 struct node_dial { 
     string _n; // clau amb la informació del nom actual
+    phone _p; // informació associada a la clau _n
     node_dial* _esq; // branca esquerra
     node_dial* _dret; // branca dreta 
+    node_dial* _pare; // apuntador al pare del node
 };
 
 // punter a l'arrel de l'arbre
@@ -11,6 +13,9 @@ node_dial* _arrel;
 
 // Prefix utilitzat per fer la cerca dels noms.
 string _prefix;
+
+// punter al node de l'arbre que coincideix amb el prefix
+node_dial* _actual;
 
 // Retorna un node amb la copia de la informacio de pcopia;
 static node_dial* copiar_nodes(node_dial* &node_original);
