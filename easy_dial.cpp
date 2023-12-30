@@ -1,15 +1,48 @@
 #include "easy_dial.hpp"
 
+easy_dial::node_dial* easy_dial::insereix(node_dial *t, nat i, const phone &p, node_dial** array) {
+  if (t == NULL) {
+    t = new node_dial(p.nom()[i], p);
+    if(i==0){
+      array[p.nom()[i]-33] = t;
+    }
+    try {
+      if (i < p.nom().length()-1) {
+        t->_cent = insereix(t->_cent, i+1, p, array);
+        t->_cent->_pare = t;
+      }
+    } catch (...) {
+      delete t;
+      throw;
+    }
+  } else {
+    if (t->_c > p.nom()[i]) {
+      t->_esq = insereix(t->_esq, i, p, array);
+      t->_esq->_pare = t;
+    }
+    else if (t->_c < p.nom()[i]) {
+      t->_dret = insereix(t->_dret, i, p, array);
+      t->_dret->_pare = t;
+    }
+    else { // (t->_c == p.nom()[i])
+      if(t->_p < p){
+        t->_p = p;
+      }
+      t->_cent = insereix(t->_cent, i+1, p, array);
+      t->_cent->_pare = t;
+    }
+  }
+  return t;
+}
+
 // Retorna un node amb la copia de la informacio de pcopia;;
-  easy_dial::node_dial* easy_dial::copiar_nodes(node_dial* &node_original){
+  easy_dial::node_dial* easy_dial::copiar_nodes(node_dial* node_original){
     if (node_original == nullptr) {
       return nullptr;
     }
 
     // Crear un nou node
-    node_dial* node_nou = new node_dial;
-    node_nou->_n = node_original->_n;
-    node_nou->_p = node_original->_p;
+    node_dial* node_nou = new node_dial(node_original->_c,node_original->_p);
 
     // Copiem recursivament les breanques
     node_nou->_esq = copiar_nodes(node_original->_esq);
@@ -23,8 +56,9 @@
 // Esborra tots els elements del arbre apuntat per p
   void easy_dial::esborra_nodes(node_dial* p){
     if(p!=nullptr){
-      esborra_nodes(p->_dret);
       esborra_nodes(p->_esq);
+      esborra_nodes(p->_cent);
+      esborra_nodes(p->_dret);
       delete p;
     }
   }
@@ -34,32 +68,20 @@
   prefix en curs queda indefinit. */
   easy_dial::easy_dial(const call_registry& R) throw(error){
     // Inicialitzar el prefix en curs com indefinit
-    _prefix = "";
+    _actual = nullptr;
 
     vector<phone> v; // Creem el vector de phones
     R.dump(v); // Fem un bolcat de tots el phones de R
 
     if(v.size()>0){
-      _arrel = new node_dial;
-      _arrel->_n = v[0].nom();
+      phone null;
+      _arrel = new node_dial(' ',null);
       int M = v.size();
-
-      node_dial* p(_arrel);
       for (int i = 0; i < M; ++i) {
-        node_dial* pnou = new node_dial;
-        pnou->_dret = nullptr;
-        pnou->_esq = nullptr;
-        pnou->_p = v[i];
-        pnou->_n = v[i].nom();
-        if(pnou->_n > p->_n){
-          p->_dret = pnou;
-        } else {
-          p->_esq = pnou;
-        }
+        _arrel = insereix(_arrel, 0, v[i], _array);
       }
     } else {
       _arrel = nullptr;
-      _actual = nullptr;
     }
   }
 
@@ -67,6 +89,9 @@
   easy_dial::easy_dial(const easy_dial& D) throw(error){
     _prefix = D._prefix;
     _actual = D._actual;
+    for(int i=0; i<126; i++){
+      _array[i] = D._array[i];
+    }
     _arrel->_pare = nullptr;
 
     // Copiar recursivamente la estructura del TST
@@ -78,7 +103,6 @@
       esborra_nodes(_arrel);
       _prefix = D._prefix;
       _actual = D._actual;
-      _arrel = new node_dial;
       _arrel = copiar_nodes(D._arrel);
 	  }
 	  return (*this);
@@ -95,7 +119,7 @@
     _actual = _arrel;
     string result;
     if(_arrel!=nullptr){
-      result = _arrel->_n;
+      result = _arrel->_p.nom();
     } else {
       result = "";
     }
@@ -115,14 +139,17 @@
     string res;
     if(_actual!=nullptr){
       _prefix.push_back(c);
-      if(_prefix > _actual->_n){
-        res = _actual->_dret->_n;
+      if(c == _actual->_cent->_c){
+        res = _actual->_cent->_p.nom();
+        _actual = _actual->_cent;
+      } else if(c == _actual->_dret->_c){
+        res = _actual->_dret->_p.nom();
         _actual = _actual->_dret;
-      } else if(_prefix < _actual->_n){
-        res = _actual->_esq->_n;
+      } else if(c == _actual->_esq->_c){
+        res = _actual->_esq->_p.nom();
         _actual = _actual->_esq;
       } else {
-        res = _actual->_n;
+        res = "";
       }
     } else {
       throw error(ErrPrefixIndef);
@@ -144,7 +171,7 @@
       } else {
         _prefix.pop_back();
         _actual = _actual->_pare;
-        res = _actual->_n;
+        res = _actual->_p.nom();
       }
     } else {
       throw error(ErrPrefixIndef);

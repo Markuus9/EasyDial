@@ -1,11 +1,14 @@
 // easy_dial serà representat mitjançant arbre binari de cerca.
 
 struct node_dial { 
-    string _n; // clau amb la informació del nom actual
-    phone _p; // informació associada a la clau _n
+    char _c; // clau amb la informació del caracter actual
+    phone _p; // informació associada a la clau _c
     node_dial* _esq; // branca esquerra
-    node_dial* _dret; // branca dreta 
+    node_dial* _dret; // branca dreta
+    node_dial* _cent; // branca central 
     node_dial* _pare; // apuntador al pare del node
+    node_dial(const char &c, phone p, node_dial* esq = nullptr, 
+    node_dial* cen = nullptr, node_dial* dre = nullptr, node_dial* pare = nullptr);
 };
 
 // punter a l'arrel de l'arbre
@@ -17,8 +20,14 @@ string _prefix;
 // punter al node de l'arbre que coincideix amb el prefix
 node_dial* _actual;
 
+// array de punters a nodes
+node_dial* _array[126];
+
 // Retorna un node amb la copia de la informacio de pcopia;
-static node_dial* copiar_nodes(node_dial* &node_original);
+static node_dial* copiar_nodes(node_dial* node_original);
 
 // Esborra tots els elements del arbre.
 static void esborra_nodes(node_dial* p);
+
+// Insereix la clau p a l'arbre.
+static node_dial* insereix(node_dial* t, nat i, const phone &p, node_dial** array);

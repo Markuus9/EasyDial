@@ -12,7 +12,8 @@ using util::nat;
 
 namespace dialog {
 
-  /* Retorna en el vector answers els resultats obtinguts al processar
+  // Pre:  Cert
+  /* Post: Retorna en el vector answers els resultats obtinguts al processar
   els successius caràcters de l'string input, i en numtelf retorna 
   el número de telèfon corresponent a l'últim nom obtingut o un 0 si
   no existeix aquest nom de telèfon. Si durant el processament de la

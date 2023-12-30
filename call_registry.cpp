@@ -210,85 +210,23 @@ nat call_registry::num_entrades() const throw() {
 	return _nelem;
 }
 
+// Cost: Θ(n^2), n: nombre d'elements de call_registry.
 void call_registry::dump(vector<phone>& V) const throw(error) {
-	// Crear un vector temporal para almacenar los phones
-    vector<phone> tempVector;
-
     // Iterar sobre la tabla de dispersión y copiar los phones no nulos
     for (int i = 0; i < _M; ++i) {
         node_taula* current = _taula[i];
         while (current != nullptr) {
             // Verificar que el nombre no sea nulo
             if (current->_p.nom() != "") {
+				for(int j=0; j<V.size(); j++){
+					if(current->_p.nom()==V[j].nom()){
+						throw error(ErrNomRepetit);
+					}
+				}
                 // Agregar el phone al vector temporal
-                tempVector.push_back(current->_p);
+                V.push_back(current->_p);
             }
             current = current->_seg;
         }
-    }
-
-	// Ordenar el vector temporal utilizando QuickSort
-    mergeSort(tempVector, 0, tempVector.size() - 1);
-
-    // Verificar que todos los nombres sean diferentes
-    for (size_t i = 1; i < tempVector.size(); ++i) {
-        if (tempVector[i - 1] == tempVector[i]) {
-            throw error(ErrNomRepetit);
-        }
-    }
-
-    // Copiar el contenido del vector temporal al vector de salida
-    V = tempVector;
-}
-
-// Implementación del algoritmo MergeSort
-void call_registry::mergeSort(vector<phone>& arr, int low, int high) {
-    if (low < high) {
-        int mid = low + (high - low) / 2;
-        mergeSort(arr, low, mid);
-        mergeSort(arr, mid + 1, high);
-        merge(arr, low, mid, high);
-    }
-}
-
-void call_registry::merge(vector<phone>& arr, int low, int mid, int high) {
-    int n1 = mid - low + 1;
-    int n2 = high - mid;
-
-    vector<phone> L(n1);
-    vector<phone> R(n2);
-
-    for (int i = 0; i < n1; i++) {
-        L[i] = arr[low + i];
-    }
-    for (int j = 0; j < n2; j++) {
-        R[j] = arr[mid + 1 + j];
-    }
-
-    int i = 0;
-    int j = 0;
-    int k = low;
-
-    while (i < n1 && j < n2) {
-        if (L[i] < R[j]) {
-            arr[k] = L[i];
-            i++;
-        } else {
-            arr[k] = R[j];
-            j++;
-        }
-        k++;
-    }
-
-    while (i < n1) {
-        arr[k] = L[i];
-        i++;
-        k++;
-    }
-
-    while (j < n2) {
-        arr[k] = R[j];
-        j++;
-        k++;
     }
 }
