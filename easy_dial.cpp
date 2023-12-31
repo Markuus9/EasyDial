@@ -1,39 +1,45 @@
 #include "easy_dial.hpp"
 
-easy_dial::node_dial* easy_dial::insereix(node_dial *t, nat i, const phone &p, node_dial** array) {
-  if (t == NULL) {
-    t = new node_dial(p.nom()[i], p);
-    if(i==0){
-      array[p.nom()[i]-33] = t;
-    }
-    try {
-      if (i < p.nom().length()-1) {
+//
+  int easy_dial::index(const char &c){
+    return c-33;
+  }
+
+//
+  easy_dial::node_dial* easy_dial::insereix(node_dial *t, nat i, const phone &p, node_dial** array) {
+    if (t == NULL) {
+      t = new node_dial(p.nom()[i], p);
+      if(i==0){
+        array[index(p.nom()[i])] = t;
+      }
+      try {
+        if (i < p.nom().length()-1) {
+          t->_cent = insereix(t->_cent, i+1, p, array);
+          t->_cent->_pare = t;
+        }
+      } catch (...) {
+        delete t;
+        throw;
+      }
+    } else {
+      if (t->_c > p.nom()[i]) {
+        t->_esq = insereix(t->_esq, i, p, array);
+        t->_esq->_pare = t;
+      }
+      else if (t->_c < p.nom()[i]) {
+        t->_dret = insereix(t->_dret, i, p, array);
+        t->_dret->_pare = t;
+      }
+      else { // (t->_c == p.nom()[i])
+        if(t->_p < p){
+          t->_p = p;
+        }
         t->_cent = insereix(t->_cent, i+1, p, array);
         t->_cent->_pare = t;
       }
-    } catch (...) {
-      delete t;
-      throw;
     }
-  } else {
-    if (t->_c > p.nom()[i]) {
-      t->_esq = insereix(t->_esq, i, p, array);
-      t->_esq->_pare = t;
-    }
-    else if (t->_c < p.nom()[i]) {
-      t->_dret = insereix(t->_dret, i, p, array);
-      t->_dret->_pare = t;
-    }
-    else { // (t->_c == p.nom()[i])
-      if(t->_p < p){
-        t->_p = p;
-      }
-      t->_cent = insereix(t->_cent, i+1, p, array);
-      t->_cent->_pare = t;
-    }
+    return t;
   }
-  return t;
-}
 
 // Retorna un node amb la copia de la informacio de pcopia;;
   easy_dial::node_dial* easy_dial::copiar_nodes(node_dial* node_original){
@@ -46,9 +52,11 @@ easy_dial::node_dial* easy_dial::insereix(node_dial *t, nat i, const phone &p, n
 
     // Copiem recursivament les breanques
     node_nou->_esq = copiar_nodes(node_original->_esq);
-    node_nou->_esq->_pare = node_nou;
+    if(node_original->_esq!= nullptr) node_nou->_esq->_pare = node_nou;
+    node_nou->_cent = copiar_nodes(node_original->_esq);
+    if(node_original->_cent!= nullptr) node_nou->_cent->_pare = node_nou;
     node_nou->_dret = copiar_nodes(node_original->_dret);
-    node_nou->_dret->_pare = node_nou;
+    if(node_original->_dret!= nullptr) node_nou->_dret->_pare = node_nou;
 
     return node_nou;
   }
@@ -60,6 +68,21 @@ easy_dial::node_dial* easy_dial::insereix(node_dial *t, nat i, const phone &p, n
       esborra_nodes(p->_cent);
       esborra_nodes(p->_dret);
       delete p;
+    }
+  }
+
+  void easy_dial::cerca_noms(node_dial* n, vector<string>& result){
+    if(n->_esq==nullptr and n->_dret==nullptr and n->_cent==nullptr){ // Esto hay que cambiarlo por if(n->_c == caracter fi paraula)
+      result.push_back(n->_p.nom());
+    }
+    if(n->_esq!=nullptr){
+      cerca_noms(n->_esq, result);
+    }
+    if(n->_cent!=nullptr){
+      cerca_noms(n->_cent, result);
+    }
+    if(n->_dret!=nullptr){
+      cerca_noms(n->_dret, result);
     }
   }
 
@@ -75,9 +98,9 @@ easy_dial::node_dial* easy_dial::insereix(node_dial *t, nat i, const phone &p, n
 
     if(v.size()>0){
       phone null;
-      _arrel = new node_dial(' ',null);
-      int M = v.size();
-      for (int i = 0; i < M; ++i) {
+      _arrel = new node_dial('0',null);
+      for (int i = 0; i < v.size(); ++i) {
+        _freqTotal += v[i].frequencia();
         _arrel = insereix(_arrel, 0, v[i], _array);
       }
     } else {
@@ -89,6 +112,7 @@ easy_dial::node_dial* easy_dial::insereix(node_dial *t, nat i, const phone &p, n
   easy_dial::easy_dial(const easy_dial& D) throw(error){
     _prefix = D._prefix;
     _actual = D._actual;
+    _freqTotal = D._freqTotal;
     for(int i=0; i<126; i++){
       _array[i] = D._array[i];
     }
@@ -103,6 +127,10 @@ easy_dial::node_dial* easy_dial::insereix(node_dial *t, nat i, const phone &p, n
       esborra_nodes(_arrel);
       _prefix = D._prefix;
       _actual = D._actual;
+      _freqTotal = D._freqTotal;
+      for(int i=0; i<126; i++){
+        _array[i] = D._array[i];
+      }
       _arrel = copiar_nodes(D._arrel);
 	  }
 	  return (*this);
@@ -171,7 +199,7 @@ easy_dial::node_dial* easy_dial::insereix(node_dial *t, nat i, const phone &p, n
       } else {
         _prefix.pop_back();
         _actual = _actual->_pare;
-        res = _actual->_p.nom();
+        res = _actual->_p.nom(); 
       }
     } else {
       throw error(ErrPrefixIndef);
@@ -194,7 +222,29 @@ easy_dial::node_dial* easy_dial::insereix(node_dial *t, nat i, const phone &p, n
 
   /* Retorna en el vector result tots els noms dels contactes de 
   telèfon que comencen amb el prefix pref, en ordre lexicogràfic creixent. */
-  void easy_dial::comencen(const string& pref, vector<string>& result) const throw(error){}
+  void easy_dial::comencen(const string& pref, vector<string>& result) const throw(error){
+    if(_arrel!=nullptr){
+      if(pref!=""){
+        cerca_noms(_arrel, result);
+      } else {
+        node_dial* p(_array[index(pref[0])]);
+        for(int i = 1; i<pref.size() and p!=nullptr; i++){
+          if(p->_esq->_c==pref[i]){
+            p = p->_esq;
+          } else if(p->_cent->_c==pref[i]){
+            p = p->_cent;
+          } else if(p->_dret->_c==pref[i]){
+            p = p->_dret;
+          } else {
+            p = nullptr;
+          }
+        }
+        if(p!=nullptr){
+          cerca_noms(p, result);
+        }
+      }
+    }
+  }
 
   /* Retorna el número mitjà de pulsacions necessàries para obtenir un
   telèfon. Formalment, si X és el conjunt de noms emmagatzemats en
@@ -205,4 +255,24 @@ easy_dial::node_dial* easy_dial::insereix(node_dial *t, nat i, const phone &p, n
   per tots els telèfons s del conjunt X, sent Pr(s) la probabilitat de
   telefonar a s. La probabilitat s'obté dividint la freqüència de s per
   la suma de totes les freqüències. */
-  double easy_dial::longitud_mitjana() const throw(){}
+  double easy_dial::longitud_mitjana() const throw(){
+    double res = 0.0;
+    if(_arrel!=nullptr){
+      mitjana(_arrel, 0, res, _freqTotal);
+    } else {
+      res = 0.0;
+    }
+    return res;
+  }
+
+  void easy_dial::mitjana(node_dial* t, int i, double &freq, const int &freqTotal){
+    if(t!=nullptr){ 
+      if(t->_pare->_p!=t->_p){
+        freq += (t->_p.frequencia()/freqTotal)*i;
+        i++;
+      }
+      mitjana(t->_esq, i, freq, freqTotal);
+      mitjana(t->_cent, i, freq, freqTotal);
+      mitjana(t->_dret, i, freq, freqTotal);
+    }
+  }

@@ -7,5 +7,12 @@
   seqüència de tecles representada en input es produís un error
   llavors a answers es registra el missatge d'error associat a
   l'excepció, numtelf és un 0 i finalitza el procés. */
-  void dialog::dialog(easy_dial& easy, const string& input, 
-              vector<string>& answers, nat& numtelf) throw(){}
+  void dialog::dialog(easy_dial& easy, const string& input, vector<string>& answers, nat& numtelf) throw(){
+    //Falta implenetar, esta puesto esto para que no salte error
+    easy.inici();
+    string prueba = input;
+    vector<string> prueba2 = answers;
+    int i = numtelf;
+    int prueba3[i];
+    prueba3[0] = 0;
+  }

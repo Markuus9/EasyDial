@@ -23,6 +23,12 @@ node_dial* _actual;
 // array de punters a nodes
 node_dial* _array[126];
 
+//Suma de totes les frequencies
+int _freqTotal;
+
+// Funció per calcular l'index del _array.
+static int index(const char &c);
+
 // Retorna un node amb la copia de la informacio de pcopia;
 static node_dial* copiar_nodes(node_dial* node_original);
 
@@ -31,3 +37,9 @@ static void esborra_nodes(node_dial* p);
 
 // Insereix la clau p a l'arbre.
 static node_dial* insereix(node_dial* t, nat i, const phone &p, node_dial** array);
+
+// Cerca ultima lletra.
+static void cerca_noms(node_dial* n, vector<string>& result);
+
+// Calcul de la longitud mitjana.
+static void mitjana(node_dial* t, int i, double &freq, const int &freqTotal);
