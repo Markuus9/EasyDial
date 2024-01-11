@@ -1,4 +1,17 @@
 #include "easy_dial.hpp"
+//
+  easy_dial::node_dial* easy_dial::crea_node(const char &c, phone p, node_dial* esq = nullptr,node_dial* cen = nullptr, node_dial* dre = nullptr, node_dial* pare = nullptr){
+    node_dial* nou = new node_dial;
+    nou->_c = c;
+    nou->_p = p;
+    nou->_esq = esq;
+    nou->_cent = cen;
+    nou->_dret = dre;
+    nou->_pare = pare;
+    return nou;
+  }
+
+
 
 //
   int easy_dial::index(const char &c){
@@ -8,7 +21,7 @@
 //
   easy_dial::node_dial* easy_dial::insereix(node_dial *t, nat i, const phone &p, node_dial** array) {
     if (t == NULL) {
-      t = new node_dial(p.nom()[i], p);
+      t = node_dial(p.nom()[i], p);
       if(i==0){
         array[index(p.nom()[i])] = t;
       }
@@ -48,7 +61,7 @@
     }
 
     // Crear un nou node
-    node_dial* node_nou = new node_dial(node_original->_c,node_original->_p);
+    node_dial* node_nou = node_dial(node_original->_c,node_original->_p);
 
     // Copiem recursivament les breanques
     node_nou->_esq = copiar_nodes(node_original->_esq);
@@ -98,7 +111,7 @@
 
     if(v.size()>0){
       phone null;
-      _arrel = new node_dial('0',null);
+      _arrel = node_dial('0',null);
       for (int i = 0; i < v.size(); ++i) {
         _freqTotal += v[i].frequencia();
         _arrel = insereix(_arrel, 0, v[i], _array);

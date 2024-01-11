@@ -7,8 +7,6 @@ struct node_dial {
     node_dial* _dret; // branca dreta
     node_dial* _cent; // branca central 
     node_dial* _pare; // apuntador al pare del node
-    node_dial(const char &c, phone p, node_dial* esq = nullptr, 
-    node_dial* cen = nullptr, node_dial* dre = nullptr, node_dial* pare = nullptr);
 };
 
 // punter a l'arrel de l'arbre
@@ -25,6 +23,9 @@ node_dial* _array[126];
 
 //Suma de totes les frequencies
 int _freqTotal;
+
+// Funció per crear nou nodes.
+static node_dial* crea_node(const char &c, phone p, node_dial* esq,node_dial* cen, node_dial* dre, node_dial* pare);
 
 // Funció per calcular l'index del _array.
 static int index(const char &c);

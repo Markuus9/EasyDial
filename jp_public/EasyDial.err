@@ -1,0 +1,11 @@
+
+
+11 phone Nom incorrecte. 
+
+21 call_registry Numero inexistent.
+22 call_registry Nom repetit.
+
+31 easy_dial Prefix en curs indefinit.
+32 easy_dial No hi ha telefons amb el prefix en curs.
+33 easy_dial No es pot eliminar caracter en el prefix en curs.
+

@@ -1,4 +1,4 @@
-OPCIONS = -O0 -g -Wall -Wextra -Werror -Wno-sign-compare -std=c++11 -ansi
+OPCIONS = -O0 -g -Wall -Wextra -Werror -Wno-sign-compare -Wno-deprecated -std=c++11
 
 diver_easydial.exe: driver_easydial.o phone.o call_registry.o easy_dial.o dialog.o
 	g++ -o driver_easydial.exe driver_easydial.o phone.o call_registry.o easy_dial.o dialog.o -lesin
