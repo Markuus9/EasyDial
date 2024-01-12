@@ -15,7 +15,8 @@
 
 //
   int easy_dial::index(const char &c){
-    return c-33;
+    //return c-33;
+    return int(c);
   }
 
 //
