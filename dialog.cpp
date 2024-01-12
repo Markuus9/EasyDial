@@ -12,7 +12,7 @@
     easy.inici();
     string prueba = input;
     vector<string> prueba2 = answers;
-    int i = numtelf;
-    int prueba3[i];
-    prueba3[0] = 0;
+    int prueba3[3];
+    prueba3[0] = numtelf;
+    cout << "prueba " << prueba3 << endl;
   }

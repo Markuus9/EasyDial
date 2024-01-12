@@ -53,7 +53,7 @@ phone phone::operator++(int) throw() {
 }
 
 bool phone::operator==(const phone& T) const throw() {
-	return _freq == T._freq;
+	return ((_freq == T._freq) and (_n==T._n));
 }
 
 bool phone::operator!=(const phone& T) const throw() {
@@ -98,13 +98,13 @@ bool phone::operator<=(const phone& T) const throw() {
 }
 
 bool phone::operator>=(const phone& T) const throw() {
-	bool res;
+	bool res = false;
 	if (*this != T) { // Si les freqüències són diferents, les comparem
-		res = _freq <= T._freq;
+		res = _freq >= T._freq;
 	}
 	else {
 		// Si les freqüències són iguals, comparem els noms associats als números de telèfons
-		res = _n <= T._n;
+		res = _n >= T._n;
 	}
 	return res;
 }

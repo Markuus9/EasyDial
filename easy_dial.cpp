@@ -10,9 +10,6 @@
     nou->_pare = pare;
     return nou;
   }
-
-
-
 //
   int easy_dial::index(const char &c){
     //return c-33;
@@ -105,6 +102,7 @@
   prefix en curs queda indefinit. */
   easy_dial::easy_dial(const call_registry& R) throw(error){
     // Inicialitzar el prefix en curs com indefinit
+    _prefix = "";
     _actual = nullptr;
 
     vector<phone> v; // Creem el vector de phones
@@ -157,13 +155,13 @@
   /* Inicialitza el prefix en curs a buit. Retorna el nom de F(S, ''){}
   si F (S, '') no existeix llavors retorna l'string buit. */
   string easy_dial::inici() throw(){
-    _prefix = "";
+    _prefix = " ";
     _actual = _arrel;
     string result;
     if(_arrel!=nullptr){
       result = _arrel->_p.nom();
     } else {
-      result = "";
+      result = " ";
     }
     return result;
   }
@@ -181,13 +179,13 @@
     string res;
     if(_actual!=nullptr){
       _prefix.push_back(c);
-      if(c == _actual->_cent->_c){
+      if(_actual->_cent!=nullptr and c == _actual->_cent->_c){
         res = _actual->_cent->_p.nom();
         _actual = _actual->_cent;
-      } else if(c == _actual->_dret->_c){
+      } else if(_actual->_dret!=nullptr and c == _actual->_dret->_c){
         res = _actual->_dret->_p.nom();
         _actual = _actual->_dret;
-      } else if(c == _actual->_esq->_c){
+      } else if(_actual->_esq!=nullptr and c == _actual->_esq->_c){
         res = _actual->_esq->_p.nom();
         _actual = _actual->_esq;
       } else {
@@ -208,7 +206,7 @@
   string easy_dial::anterior() throw(error){
     string res;
     if(_actual!=nullptr){
-      if(_prefix==""){
+      if(_actual->_pare==nullptr){
         throw error(ErrNoHiHaAnterior);
       } else {
         _prefix.pop_back();
@@ -226,17 +224,49 @@
   no existeix F(S, p). */
   nat easy_dial::num_telf() const throw(error){
     nat res;
-    if(_actual!=nullptr){
-      res = _actual->_p.numero();
+    if(_prefix!=" "){
+      if(_actual==nullptr){
+        throw error(ErrPrefixIndef);
+      } else {
+        res = _actual->_p.numero();
+      }
     } else {
-      throw error(ErrPrefixIndef);
-    }
+      throw error(ErrNoExisteixTelefon);
+    } 
     return res;
   }
+
+  // Pre: t=T, i=I, s=S
+  // Post: Retorna nombre de claus des del node T que tenen el prefix S
+  // des de la posició I
+  void easy_dial::prefix(node_dial* t, nat i, const string& s, vector<string>& result){
+    if (t != NULL) {
+      if (i < s.length()) { // Recorrem el prefix
+        if (t->_c > s[i]) {
+          prefix(t->_esq, i, s, result);
+        } else if (t->_c < s[i]) {
+          prefix(t->_dret, i, s, result);
+        } else if (t->_c == s[i]) { 
+          prefix(t->_cent, i+1, s, result);
+        } else if (t->_c == '\0'){ // Comptem les paraules
+          result.push_back(t->_p.nom());
+          prefix(t->_esq, i, s, result);
+          prefix(t->_dret, i, s, result);
+          prefix(t->_cent, i, s, result);
+        }
+      }
+    }
+  } 
 
   /* Retorna en el vector result tots els noms dels contactes de 
   telèfon que comencen amb el prefix pref, en ordre lexicogràfic creixent. */
   void easy_dial::comencen(const string& pref, vector<string>& result) const throw(error){
+    // Pre: s=S
+    // Post: Retorna nombre de claus del p.i. que tenen el prefix S
+    return prefix(_arrel, 0, pref, result);
+  }
+
+  /*void easy_dial::comencen(const string& pref, vector<string>& result) const throw(error){
     if(_arrel!=nullptr){
       if(pref!=""){
         cerca_noms(_arrel, result);
@@ -258,7 +288,7 @@
         }
       }
     }
-  }
+  } */
 
   /* Retorna el número mitjà de pulsacions necessàries para obtenir un
   telèfon. Formalment, si X és el conjunt de noms emmagatzemats en
@@ -281,7 +311,7 @@
 
   void easy_dial::mitjana(node_dial* t, int i, double &freq, const int &freqTotal){
     if(t!=nullptr){ 
-      if(t->_pare->_p!=t->_p){
+      if(t->_pare!=nullptr and t->_pare->_p!=t->_p){
         freq += (t->_p.frequencia()/freqTotal)*i;
         i++;
       }

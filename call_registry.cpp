@@ -13,6 +13,7 @@ call_registry::node_taula* call_registry::copia_nodes(node_taula* pcopia) {
 		if (pprimer == nullptr) {
 			pprimer = p;
 		}
+		pcopia = pcopia->_seg;
 	}
 	if (p != nullptr) {
 		p->_seg = nullptr;
@@ -28,9 +29,10 @@ void call_registry::esborra_nodes(node_taula* p) {
 }
 
 int call_registry::hash(const nat &x) {
-	static long const MULT = 31415926;
-	long int y = ((x * x * MULT) << 20) >> 4;
-	return y;
+	//static long const MULT = 31415926;
+	//long y = ((x * x * MULT) << 20) >> 4;
+	//return y;
+	return x;
 }
 
 call_registry::call_registry() throw(error) {
@@ -78,53 +80,80 @@ call_registry::~call_registry() throw() {
 void call_registry::registra_trucada(nat num) throw(error) {
 	int i = hash(num) % _M;
 	node_taula* t = _taula[i];
-	bool hi_es = false;
-	while (t != nullptr and not hi_es) {
-		if (t->_k == num) { 
-			hi_es = true;
-			t->_p++;
-		} else {
-			t = t->_seg; 
-		}
-	}
-	if(not hi_es){
+	node_taula* pant = nullptr;
+	if(t==nullptr){
 		node_taula* nou = new node_taula;
-		string buit = "";
 		phone p(num, "", 1);
 		nou->_p = p;
 		nou->_k = num;
-		t = nou; 
+		nou->_seg = nullptr;
+		_taula[i] = nou; 
 		++_nelem;
+	} else {
+		bool hi_es = false;
+		while (t != nullptr and not hi_es) {
+			if (t->_k == num) { 
+				hi_es = true;
+				t->_p++;
+			} else {
+				pant = t;
+				t = t->_seg; 
+			}
+		}
+		if(not hi_es){
+			node_taula* nou = new node_taula;
+			phone p(num, "", 1);
+			nou->_p = p;
+			nou->_k = num;
+			nou->_seg = nullptr;
+			t = nou; 
+			pant->_seg = t;
+			++_nelem;
+		}
 	}
 }
 
 void call_registry::assigna_nom(nat num, const string& name) throw(error) {
 	int i = hash(num) % _M;
 	node_taula* t = _taula[i];
-	bool hi_es = false;
-	while (t != nullptr and not hi_es) {
-		if (t->_k == num) { 
-			hi_es = true;
-		} else {
-			t = t->_seg; 
-		}
-	}
-	if(not hi_es){
+	node_taula* pant = nullptr;
+	if(t==nullptr){
 		node_taula* nou = new node_taula;
 		phone p(num, name, 0);
 		nou->_p = p;
 		nou->_k = num;
+		nou->_seg = nullptr;
 		_taula[i] = nou; 
 		++_nelem;
 	} else {
-		nat freq = t->_p.frequencia();
-		phone p(num, name, freq);
-		t->_p = p;
+		bool hi_es = false;
+		while (t != nullptr and not hi_es) {
+			if (t->_k == num) { 
+				hi_es = true;
+			} else {
+				pant = t;
+				t = t->_seg; 
+			}
+		}
+		if(not hi_es){
+			node_taula* nou = new node_taula;
+			phone p(num, name, 0);
+			nou->_p = p;
+			nou->_k = num;
+			nou->_seg = nullptr;
+			t = nou; 
+			pant->_seg = t;
+			++_nelem;
+		} else {
+			nat freq = t->_p.frequencia();
+			phone p(num, name, freq);
+			t->_p = p;
+		}
 	}
 }
 
 void call_registry::elimina(nat num) throw(error) {
-	nat i = hash(num);
+	nat i = hash(num) % _M;
 	node_taula *p = _taula[i], *ant=nullptr; 
 	bool trobat = false;
 	while (p != nullptr and not trobat) {

@@ -39,6 +39,8 @@ static void esborra_nodes(node_dial* p);
 // Insereix la clau p a l'arbre.
 static node_dial* insereix(node_dial* t, nat i, const phone &p, node_dial** array);
 
+static void prefix(node_dial* t, nat i, const string& s,  vector<string>& result);
+
 // Cerca ultima lletra.
 static void cerca_noms(node_dial* n, vector<string>& result);
 
