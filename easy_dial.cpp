@@ -103,6 +103,7 @@
   easy_dial::easy_dial(const call_registry& R) throw(error){
     // Inicialitzar el prefix en curs com indefinit
     _prefix = "";
+    _indefinit = true;
     _actual = nullptr;
 
     vector<phone> v; // Creem el vector de phones
@@ -124,6 +125,7 @@
   easy_dial::easy_dial(const easy_dial& D) throw(error){
     _prefix = D._prefix;
     _actual = D._actual;
+    _indefinit = D._indefinit;
     _freqTotal = D._freqTotal;
     for(int i=0; i<126; i++){
       _array[i] = D._array[i];
@@ -139,6 +141,7 @@
       esborra_nodes(_arrel);
       _prefix = D._prefix;
       _actual = D._actual;
+      _indefinit = D._indefinit;
       _freqTotal = D._freqTotal;
       for(int i=0; i<126; i++){
         _array[i] = D._array[i];
@@ -155,13 +158,14 @@
   /* Inicialitza el prefix en curs a buit. Retorna el nom de F(S, ''){}
   si F (S, '') no existeix llavors retorna l'string buit. */
   string easy_dial::inici() throw(){
-    _prefix = " ";
+    _prefix = "";
+    _indefinit = false;
     _actual = _arrel;
     string result;
     if(_arrel!=nullptr){
       result = _arrel->_p.nom();
     } else {
-      result = " ";
+      result = "";
     }
     return result;
   }
@@ -192,6 +196,7 @@
         res = "";
       }
     } else {
+      _indefinit = true;
       throw error(ErrPrefixIndef);
     }
     return res;
@@ -224,14 +229,14 @@
   no existeix F(S, p). */
   nat easy_dial::num_telf() const throw(error){
     nat res;
-    if(_prefix!=" "){
-      if(_actual==nullptr){
-        throw error(ErrPrefixIndef);
-      } else {
+    if(_indefinit!=false){
+      if(_actual!=nullptr){
         res = _actual->_p.numero();
+      } else {
+        throw error(ErrNoExisteixTelefon);
       }
     } else {
-      throw error(ErrNoExisteixTelefon);
+      throw error(ErrPrefixIndef);
     } 
     return res;
   }

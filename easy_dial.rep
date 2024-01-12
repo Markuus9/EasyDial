@@ -15,6 +15,9 @@ node_dial* _arrel;
 // Prefix utilitzat per fer la cerca dels noms.
 string _prefix;
 
+// Bolea utilitzat per controlar l'estat del prefix
+bool _indefinit;
+
 // punter al node de l'arbre que coincideix amb el prefix
 node_dial* _actual;
 
