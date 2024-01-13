@@ -17,15 +17,15 @@
   }
 
 //
-  easy_dial::node_dial* easy_dial::insereix(node_dial *t, nat i, const phone &p, node_dial** array) {
+  easy_dial::node_dial* easy_dial::insereix(node_dial *t, nat i, const phone &p) {
     if (t == nullptr) {
       t = crea_node(p.nom()[i], p);
-      if(i==0){
+      /*if(i==0){
         array[index(p.nom()[i])] = t;
-      }
+      }*/
       try {
         if (i < p.nom().length()-1) {
-          t->_cent = insereix(t->_cent, i+1, p, array);
+          t->_cent = insereix(t->_cent, i+1, p);
           t->_cent->_pare = t;
         }
       } catch (...) {
@@ -37,18 +37,18 @@
         t->_p = p;
       }
       if (t->_c > p.nom()[i]) {
-        t->_esq = insereix(t->_esq, i, p, array);
+        t->_esq = insereix(t->_esq, i, p);
         t->_esq->_pare = t;
       }
       else if (t->_c < p.nom()[i]) {
-        t->_dret = insereix(t->_dret, i, p, array);
+        t->_dret = insereix(t->_dret, i, p);
         t->_dret->_pare = t;
       }
       else { // (t->_c == p.nom()[i])
         if(t->_p < p){
           t->_p = p;
         }
-        t->_cent = insereix(t->_cent, i+1, p, array);
+        t->_cent = insereix(t->_cent, i+1, p);
         t->_cent->_pare = t;
       }
     }
@@ -118,7 +118,7 @@
       _arrel = crea_node('0',null);
       for (int i = 0; i < v.size(); ++i) {
         _freqTotal += v[i].frequencia();
-        _arrel = insereix(_arrel, 0, v[i], _array);
+        _arrel = insereix(_arrel, 0, v[i]);
       }
     } else {
       _arrel = nullptr;
@@ -132,9 +132,9 @@
     _anterior = D._anterior;
     _indefinit = D._indefinit;
     _freqTotal = D._freqTotal;
-    for(int i=0; i<126; i++){
-      _array[i] = D._array[i];
-    }
+    //for(int i=0; i<126; i++){
+    //  _array[i] = D._array[i];
+    //}
     _arrel->_pare = nullptr;
 
     // Copiar recursivamente la estructura del TST
@@ -149,9 +149,9 @@
       _anterior = D._anterior;
       _indefinit = D._indefinit;
       _freqTotal = D._freqTotal;
-      for(int i=0; i<126; i++){
-        _array[i] = D._array[i];
-      }
+      //for(int i=0; i<126; i++){
+      //  _array[i] = D._array[i];
+      //}
       _arrel = copiar_nodes(D._arrel);
 	  }
 	  return (*this);
@@ -159,9 +159,7 @@
 
   easy_dial::~easy_dial() throw(){
     esborra_nodes(_arrel);
-    //delete _actual;
-    //delete _anterior;
-    //_indefinit = true;
+    _indefinit = true;
   }
 
   /* Inicialitza el prefix en curs a buit. Retorna el nom de F(S, ''){}
@@ -174,6 +172,7 @@
     string result;
     if(_arrel!=nullptr){
       result = _arrel->_p.nom();
+      _ultim = result;
     } else {
       result = "";
     }
@@ -191,18 +190,22 @@
   fos indefinit. */
   string easy_dial::seguent(char c) throw(error){
     string res;
+    if(_anterior!=nullptr){
+      _indefinit = true;
+      throw error(ErrPrefixIndef);
+    }
     if(_indefinit!=true and _actual!=nullptr){
       _prefix.push_back(c);
       if(_actual->_cent!=nullptr and c == _actual->_cent->_c){
         _actual = _actual->_cent;
         res = _actual->_p.nom();
       } else if(_actual->_dret!=nullptr and c == _actual->_dret->_c){
-        res = _actual->_dret->_p.nom();
         _actual = _actual->_dret;
+        res = _actual->_p.nom();
       } else if(_actual->_esq!=nullptr and c == _actual->_esq->_c){
-        res = _actual->_esq->_p.nom();
         _actual = _actual->_esq;
-      } else if(_anterior!=nullptr){
+        res = _actual->_p.nom();
+      } else if(_anterior!=nullptr){ // _anterior!=nullptr
         _indefinit = true;
         throw error(ErrPrefixIndef);
       } else {
@@ -212,6 +215,12 @@
     } else {
       _indefinit = true;
       throw error(ErrPrefixIndef);
+    }
+    if(res==_ultim){
+      _anterior = _actual;
+      res = "";
+    } else if(res!=""){
+      _ultim = res;
     }
     return res;
   }
@@ -228,7 +237,7 @@
       if(_prefix.size()==0){
         _indefinit = true;
         throw error(ErrNoHiHaAnterior);
-      } else if(_anterior!=nullptr){
+      } else if(_anterior!=nullptr){ // _anterior!=nullptr
         _actual = _anterior;
         _anterior = nullptr;
       } else {
@@ -249,7 +258,9 @@
   nat easy_dial::num_telf() const throw(error){
     nat res;
     if(_indefinit!=true){
-      if(_prefix.size()==0 and _actual!=nullptr){
+      if(_anterior!=nullptr){
+        throw error(ErrNoExisteixTelefon);
+      } if(_prefix.size()==0 and _actual!=nullptr){
         res = _actual->_p.numero();
       } else if(_actual!=_arrel){
         res = _actual->_p.numero();
@@ -274,7 +285,9 @@
           prefix(t->_dret, i, s, result);
         } else if (t->_c == s[i]) { 
           prefix(t->_cent, i+1, s, result);
-        } else if (t->_c == '\0'){ // Comptem les paraules
+        } 
+      } else {
+        if (t->_c == phone::ENDCHAR) { // Comptem les paraules
           result.push_back(t->_p.nom());
           prefix(t->_esq, i, s, result);
           prefix(t->_dret, i, s, result);
@@ -288,7 +301,9 @@
   telèfon que comencen amb el prefix pref, en ordre lexicogràfic creixent. */
   void easy_dial::comencen(const string& pref, vector<string>& result) const throw(error){
     // Pre: s=S
-    // Post: Retorna nombre de claus del p.i. que tenen el prefix S
+    // Post: Modifica el vector afegint les claus del p.i. que tenen el prefix S
+    //string Prefix = pref;
+    //Prefix.push_back(phone::ENDCHAR);
     return prefix(_arrel, 0, pref, result);
   }
 

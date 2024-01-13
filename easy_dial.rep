@@ -24,8 +24,11 @@ bool _indefinit;
 // punter al node de l'arbre que coincideix amb el prefix
 node_dial* _actual;
 
+// String on es guarda ultim nom mostrat
+string _ultim;
+
 // array de punters a nodes
-node_dial* _array[127];
+//node_dial* _array[127];
 
 //Suma de totes les frequencies
 int _freqTotal;
@@ -43,7 +46,7 @@ static node_dial* copiar_nodes(node_dial* node_original);
 static void esborra_nodes(node_dial* p);
 
 // Insereix la clau p a l'arbre.
-static node_dial* insereix(node_dial* t, nat i, const phone &p, node_dial** array);
+static node_dial* insereix(node_dial* t, nat i, const phone &p);
 
 static void prefix(node_dial* t, nat i, const string& s,  vector<string>& result);
 
