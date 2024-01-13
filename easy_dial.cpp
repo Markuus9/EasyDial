@@ -287,12 +287,12 @@
           prefix(t->_cent, i+1, s, result);
         } 
       } else {
-        if (t->_c == phone::ENDCHAR) { // Comptem les paraules
+        if (t->_cent == nullptr) { // Comptem les paraules
           result.push_back(t->_p.nom());
-          prefix(t->_esq, i, s, result);
-          prefix(t->_dret, i, s, result);
-          prefix(t->_cent, i, s, result);
         }
+        prefix(t->_esq, i, s, result);
+        prefix(t->_dret, i, s, result);
+        prefix(t->_cent, i, s, result);
       }
     }
   } 
@@ -304,7 +304,11 @@
     // Post: Modifica el vector afegint les claus del p.i. que tenen el prefix S
     //string Prefix = pref;
     //Prefix.push_back(phone::ENDCHAR);
-    return prefix(_arrel, 0, pref, result);
+    if(_arrel!=nullptr){
+      prefix(_arrel->_cent, 0, pref, result);
+      prefix(_arrel->_esq, 0, pref, result);
+      prefix(_arrel->_dret, 0, pref, result);
+    }
   }
 
   /*void easy_dial::comencen(const string& pref, vector<string>& result) const throw(error){
