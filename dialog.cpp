@@ -1,18 +1,36 @@
 #include "dialog.hpp"
 
-/* Retorna en el vector answers els resultats obtinguts al processar
-  els successius caràcters de l'string input, i en numtelf retorna 
-  el número de telèfon corresponent a l'últim nom obtingut o un 0 si
-  no existeix aquest nom de telèfon. Si durant el processament de la
-  seqüència de tecles representada en input es produís un error
-  llavors a answers es registra el missatge d'error associat a
-  l'excepció, numtelf és un 0 i finalitza el procés. */
-  void dialog::dialog(easy_dial& easy, const string& input, vector<string>& answers, nat& numtelf) throw(){
-    //Falta implenetar, esta puesto esto para que no salte error
-    easy.inici();
-    string prueba = input;
-    vector<string> prueba2 = answers;
-    int prueba3[3];
-    prueba3[0] = numtelf;
-    cout << "prueba " << prueba3 << endl;
-  }
+void dialog::dialog(easy_dial& easy, const string& input, vector<string>& answers, nat& numtelf) throw(){
+	nat mida = input.size();
+	nat i = 0;
+	bool fi = false;
+	string retorn;
+	retorn = easy.inici();
+	numtelf = easy.num_telf();
+	while (i < mida and not fi) {
+		if (input[i] == phone::ENDCHAR) {
+			// Indiquem que ja hem escrit un nom complet
+			fi = true;
+		}
+		else {
+			try {
+				if (input[i] == phone::DELETECHAR) {
+					// Esborrem el caràcter premut anteriorment
+					retorn = easy.anterior();
+				}
+				else {
+					// Es prem un nou caràcter (input[i])
+					retorn = easy.seguent(input[i]);
+				}
+				answers.push_back(retorn);
+				numtelf = easy.num_telf();
+			}
+			catch (string &error) {
+				answers.push_back(error);
+				numtelf = 0;
+				fi = true;
+			}
+		}
+		++i;
+	}
+}
