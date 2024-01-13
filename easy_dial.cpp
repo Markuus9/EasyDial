@@ -18,7 +18,7 @@
 
 //
   easy_dial::node_dial* easy_dial::insereix(node_dial *t, nat i, const phone &p, node_dial** array) {
-    if (t == NULL) {
+    if (t == nullptr) {
       t = crea_node(p.nom()[i], p);
       if(i==0){
         array[index(p.nom()[i])] = t;
@@ -33,6 +33,9 @@
         throw;
       }
     } else {
+      if(t->_p < p){
+        t->_p = p;
+      }
       if (t->_c > p.nom()[i]) {
         t->_esq = insereix(t->_esq, i, p, array);
         t->_esq->_pare = t;
@@ -105,6 +108,7 @@
     _prefix = "";
     _indefinit = true;
     _actual = nullptr;
+    _anterior = nullptr;
 
     vector<phone> v; // Creem el vector de phones
     R.dump(v); // Fem un bolcat de tots el phones de R
@@ -125,6 +129,7 @@
   easy_dial::easy_dial(const easy_dial& D) throw(error){
     _prefix = D._prefix;
     _actual = D._actual;
+    _anterior = D._anterior;
     _indefinit = D._indefinit;
     _freqTotal = D._freqTotal;
     for(int i=0; i<126; i++){
@@ -141,6 +146,7 @@
       esborra_nodes(_arrel);
       _prefix = D._prefix;
       _actual = D._actual;
+      _anterior = D._anterior;
       _indefinit = D._indefinit;
       _freqTotal = D._freqTotal;
       for(int i=0; i<126; i++){
@@ -153,6 +159,9 @@
 
   easy_dial::~easy_dial() throw(){
     esborra_nodes(_arrel);
+    //delete _actual;
+    //delete _anterior;
+    //_indefinit = true;
   }
 
   /* Inicialitza el prefix en curs a buit. Retorna el nom de F(S, ''){}
@@ -161,6 +170,7 @@
     _prefix = "";
     _indefinit = false;
     _actual = _arrel;
+    _anterior = nullptr;
     string result;
     if(_arrel!=nullptr){
       result = _arrel->_p.nom();
@@ -181,18 +191,22 @@
   fos indefinit. */
   string easy_dial::seguent(char c) throw(error){
     string res;
-    if(_actual!=nullptr){
+    if(_indefinit!=true and _actual!=nullptr){
       _prefix.push_back(c);
       if(_actual->_cent!=nullptr and c == _actual->_cent->_c){
-        res = _actual->_cent->_p.nom();
         _actual = _actual->_cent;
+        res = _actual->_p.nom();
       } else if(_actual->_dret!=nullptr and c == _actual->_dret->_c){
         res = _actual->_dret->_p.nom();
         _actual = _actual->_dret;
       } else if(_actual->_esq!=nullptr and c == _actual->_esq->_c){
         res = _actual->_esq->_p.nom();
         _actual = _actual->_esq;
+      } else if(_anterior!=nullptr){
+        _indefinit = true;
+        throw error(ErrPrefixIndef);
       } else {
+        _anterior = _actual;
         res = "";
       }
     } else {
@@ -210,15 +224,20 @@
   si p fos indefinit. */
   string easy_dial::anterior() throw(error){
     string res;
-    if(_actual!=nullptr){
-      if(_actual->_pare==nullptr){
+    if(_indefinit!=true){
+      if(_prefix.size()==0){
+        _indefinit = true;
         throw error(ErrNoHiHaAnterior);
+      } else if(_anterior!=nullptr){
+        _actual = _anterior;
+        _anterior = nullptr;
       } else {
-        _prefix.pop_back();
         _actual = _actual->_pare;
-        res = _actual->_p.nom(); 
       }
+      _prefix.pop_back();
+      res = _actual->_p.nom(); 
     } else {
+      _indefinit = true;
       throw error(ErrPrefixIndef);
     }
     return res;
@@ -229,8 +248,10 @@
   no existeix F(S, p). */
   nat easy_dial::num_telf() const throw(error){
     nat res;
-    if(_indefinit!=false){
-      if(_actual!=nullptr){
+    if(_indefinit!=true){
+      if(_prefix.size()==0 and _actual!=nullptr){
+        res = _actual->_p.numero();
+      } else if(_actual!=_arrel){
         res = _actual->_p.numero();
       } else {
         throw error(ErrNoExisteixTelefon);

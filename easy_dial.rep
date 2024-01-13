@@ -9,6 +9,9 @@ struct node_dial {
     node_dial* _pare; // apuntador al pare del node
 };
 
+// Punter anterior en cas d'arribar al final
+node_dial* _anterior;
+
 // punter a l'arrel de l'arbre
 node_dial* _arrel;
 
