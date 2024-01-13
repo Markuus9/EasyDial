@@ -1,5 +1,7 @@
 #include "call_registry.hpp"
 
+// Cost: θ(e), on e és el nombre d'elements de la llista simplement
+// encadenada apuntada per pcopia
 call_registry::node_taula* call_registry::copia_nodes(node_taula* pcopia) {
 	node_taula *p = nullptr, *pant = nullptr, *pprimer = nullptr;
 	while (pcopia != nullptr) {
@@ -21,6 +23,8 @@ call_registry::node_taula* call_registry::copia_nodes(node_taula* pcopia) {
 	return pprimer;
 }
 
+// Cost: θ(e), on e és el nombre d'elements de la llista simplement
+// encadenada apuntada per p
 void call_registry::esborra_nodes(node_taula* p) {
 	if (p != nullptr) {
 		esborra_nodes(p->_seg);
@@ -28,6 +32,7 @@ void call_registry::esborra_nodes(node_taula* p) {
 	}
 }
 
+// Cost: θ(1)
 int call_registry::hash(const nat &x) {
 	//static long const MULT = 31415926;
 	//long y = ((x * x * MULT) << 20) >> 4;
@@ -35,6 +40,8 @@ int call_registry::hash(const nat &x) {
 	return x;
 }
 
+// Cost: θ(1), perquè sempre es el mateix nombre
+// d'iteracions per crear un call_registry buit
 call_registry::call_registry() throw(error) {
 	_M = 5;
 	_nelem = 0;
@@ -44,6 +51,8 @@ call_registry::call_registry() throw(error) {
   	}
 }
 
+// Cost: θ(n), on n és el nombre de claus que té el
+// call_registry R
 call_registry::call_registry(const call_registry& R) throw(error) {
 	_M = R._M;
 	_nelem = R._nelem;
@@ -53,6 +62,9 @@ call_registry::call_registry(const call_registry& R) throw(error) {
 	}
 }
 
+// Cost: θ(n1+n2), on n1 és el nombre de claus que tenia inicialment
+// el call_registry paràmetre implícit i n2 és el nombre de claus
+// que té el call_registry R
 call_registry& call_registry::operator=(const call_registry& R) throw(error) {
 	if (this != &R) {
 		for (int i=0; i<_M; ++i) {
@@ -70,6 +82,8 @@ call_registry& call_registry::operator=(const call_registry& R) throw(error) {
 	return (*this);
 }
 
+// Cost: θ(n), on n és el nombre de claus que té el
+// call_registry R
 call_registry::~call_registry() throw() {
 	for (int i=0; i < _M; ++i) {
 		esborra_nodes(_taula[i]);
@@ -77,6 +91,9 @@ call_registry::~call_registry() throw() {
 	delete _taula;
 }
 
+// Cost: O(e), on e és el nombre d'elements de la llista simplement
+// encadenada que li correspon a "num". Si els elements del call_registry
+// estan ben dispersos, en terme mig el cost del mètode és θ(1)
 void call_registry::registra_trucada(nat num) throw(error) {
 	int i = hash(num) % _M;
 	node_taula* t = _taula[i];
@@ -113,6 +130,9 @@ void call_registry::registra_trucada(nat num) throw(error) {
 	}
 }
 
+// Cost: O(e), on e és el nombre d'elements de la llista simplement
+// encadenada que li correspon a "num". Si els elements del call_registry
+// estan ben dispersos, en terme mig el cost del mètode és θ(1)
 void call_registry::assigna_nom(nat num, const string& name) throw(error) {
 	int i = hash(num) % _M;
 	node_taula* t = _taula[i];
@@ -152,6 +172,9 @@ void call_registry::assigna_nom(nat num, const string& name) throw(error) {
 	}
 }
 
+// Cost: O(e), on e és el nombre d'elements de la llista simplement
+// encadenada que li correspon a "num". Si els elements del call_registry
+// estan ben dispersos, en terme mig el cost del mètode és θ(1)
 void call_registry::elimina(nat num) throw(error) {
 	nat i = hash(num) % _M;
 	node_taula *p = _taula[i], *ant=nullptr; 
@@ -177,6 +200,9 @@ void call_registry::elimina(nat num) throw(error) {
 	}
 }
 
+// Cost: O(e), on e és el nombre d'elements de la llista simplement
+// encadenada que li correspon a "num". Si els elements del call_registry
+// estan ben dispersos, en terme mig el cost del mètode és θ(1)
 bool call_registry::conte(nat num) const throw() {
 	int i = hash(num) % _M;
 	node_taula* t = _taula[i];
@@ -191,6 +217,9 @@ bool call_registry::conte(nat num) const throw() {
 	return hi_es;
 }
 
+// Cost: O(e), on e és el nombre d'elements de la llista simplement
+// encadenada que li correspon a "num". Si els elements del call_registry
+// estan ben dispersos, en terme mig el cost del mètode és θ(1)
 string call_registry::nom(nat num) const throw(error) {
 	int i = hash(num) % _M;
 	string nom = "";
@@ -211,6 +240,9 @@ string call_registry::nom(nat num) const throw(error) {
 	return nom;
 }
 
+// Cost: O(e), on e és el nombre d'elements de la llista simplement
+// encadenada que li correspon a "num". Si els elements del call_registry
+// estan ben dispersos, en terme mig el cost del mètode és θ(1)
 nat call_registry::num_trucades(nat num) const throw(error) {
 	int i = hash(num) % _M;
 	nat freq;
@@ -231,28 +263,30 @@ nat call_registry::num_trucades(nat num) const throw(error) {
 	return freq;
 }
 
+// Cost: θ(1)
 bool call_registry::es_buit() const throw() {
 	return _nelem==0;
 }
 
+// Cost: θ(1)
 nat call_registry::num_entrades() const throw() {
 	return _nelem;
 }
 
-// Cost: Θ(n^2), n: nombre d'elements de call_registry.
+// Cost: Θ(n^2), on n és el nombre d'elements del call_registry.
 void call_registry::dump(vector<phone>& V) const throw(error) {
-    // Iterar sobre la tabla de dispersión y copiar los phones no nulos
+    // Iterar sobre la taula de dispersió y copiar els phones que tenen un nom no nul
     for (int i = 0; i < _M; ++i) {
         node_taula* current = _taula[i];
         while (current != nullptr) {
-            // Verificar que el nombre no sea nulo
+            // Verificar que el nombre no sigui nul
             if (current->_p.nom() != "") {
 				for(int j=0; j<V.size(); j++){
 					if(current->_p.nom()==V[j].nom()){
 						throw error(ErrNomRepetit);
 					}
 				}
-                // Agregar el phone al vector temporal
+                // Afegir el phone al vector temporal
                 V.push_back(current->_p);
             }
             current = current->_seg;
