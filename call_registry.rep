@@ -7,8 +7,10 @@
 // el primer cas, la mida de la taula serà el doble de gran. En l'altre cas, la mida de la taula es reduirà a
 // la meitat.
 
-// Per reduir el cost de les cerques sense èxit, els sinònims de cada llista estaran ordenats per clau de
-// forma ascendent.
+// La nostra idea principal era representar call_registry amb un arbre binari de cerca equilibrat perquè
+// les operacions de consulta, inserció i eliminació tinguessin cost logarítmic, però degut a que no teniem
+// molt de temps per elaborar call_registry, hem optat per fer servir una taula de dispersió, que té
+// costos temporals de consultes, insercions i eliminacions una mica més elevats
 
 struct node_taula {
 	nat _k;	// clau, que serà l'atribut _num del phone p
