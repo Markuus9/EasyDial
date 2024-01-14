@@ -23,14 +23,35 @@ node_taula** _taula; // taula amb punters a les llistes de sinònims
 int _M; // nombre de punters a llistes simplement encadenades que conté _taula (mida de la taula)
 nat _nelem; // nombre de claus, cadascuna amb el seu valor associat, que conté la taula
 
-// Retorna un punter al primer element d'una llista simplement encadenada,
+// Pre: pcopia apunta a nullptr o al primer element d'una llista simplement encadenada
+// Post: Retorna un punter al primer element d'una llista simplement encadenada,
 // que és una copia de la llista apuntada per pcopia
 static node_taula* copia_nodes(node_taula* pcopia);
 
+// Pre: p apunta a nullptr o a un element d'una llista simplement encadenada.
 // Esborra tots els elements de la llista simplement encadenada
 // encadenada apuntada per p
 static void esborra_nodes(node_taula* p);
 
-// Funcio de dispersió que retorna Bits centrals
-// del quadrat del número multiplicat per PI.
+// Pre: cert
+// Post: Calcula un valor de dispersió entre 0 i LONG_MAX a partir de x
 static int hash(const nat &x);
+
+// Pre: cert
+// Post: Redimensiona la taula de dispersió amb una mida el doble que 
+// l’anterior més un (_M => 2*_M+1) si augmentar és true. Altrament
+// la mida de la taula de dispersió es redueix a la meitat (_M => _M/2)
+void redispersio(bool augmentar);
+
+// Pre: p apunta a un element d'una taula de dispersió que no es
+// troba a la taula de dispersió del call_registry i aquest
+// mètode és cridat dins del mètode privat "redispersio"
+// Post: afegeix una còpia de l'element apuntat per p a
+// la taula de dispersió del call_registry sense tenir en compte
+// el factor de càrrega
+void insereix(node_taula *pnode);
+
+// Pre: cert
+// Post Retorna el factor de càrrega de la taula de dispersió
+// del call_registry (nombre d'elements entre mida de la taula)
+float factor_de_carrega() const;
