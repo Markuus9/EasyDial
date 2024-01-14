@@ -10,6 +10,7 @@ phone::phone(nat num, const string& name, nat compt) throw(error) : _num(num), _
 	}
 	// Si tots els caràcters de name són legals, no es produeix cap error
 	_n = name;
+	_n.push_back('\000');
 }
 
 // Cost: θ(1)

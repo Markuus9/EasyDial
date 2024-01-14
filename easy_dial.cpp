@@ -45,9 +45,9 @@
         t->_dret->_pare = t;
       }
       else { // (t->_c == p.nom()[i])
-        if(t->_p < p){
-          t->_p = p;
-        }
+        //if(t->_p < p){
+        //  t->_p = p;
+        //}
         t->_cent = insereix(t->_cent, i+1, p);
         t->_cent->_pare = t;
       }
@@ -86,7 +86,7 @@
   }
 
   void easy_dial::cerca_noms(node_dial* n, vector<string>& result){
-    if(n->_cent==nullptr){ 
+    if(n->_cent==nullptr){ //posible substitucion por \000
       result.push_back(n->_p.nom());
     }
     if(n->_esq!=nullptr){
@@ -175,6 +175,7 @@
     if(_arrel!=nullptr){
       result = _arrel->_p.nom();
       _ultim = result;
+      result.pop_back();
     } else {
       result = "";
     }
@@ -198,9 +199,23 @@
     }
     if(_indefinit!=true and _actual!=nullptr){
       _prefix.push_back(c);
-      if(_actual->_c == c and c!='\000'){
+      if(_actual->_c == c and _actual->_cent!=nullptr){
         _actual = _actual->_cent;
         res = _actual->_p.nom();
+      } else if(c == '\000' and _prefix[0]!='\000'){
+        bool trobat = false;
+        //node_dial* pa(_actual);
+        node_dial* pi(_actual);
+        while(!trobat){
+          if(pi->_c=='\000'){
+            res = pi->_p.nom();
+            trobat = true;
+          } else if(pi->_esq!=nullptr){
+            pi = pi->_esq;
+          } else {
+            pi = pi->_cent;
+          }
+        }
       } else if(_actual->_cent!=nullptr and c == _actual->_cent->_c){
         _actual = _actual->_cent;
         res = _actual->_p.nom();
@@ -228,7 +243,7 @@
     while(iguales){
       //_actual = _actual->_pare;
       //_anterior = _actual->_pare;
-      phone p, p2, p3;
+      //phone p, p2, p3;
       if(pi->_esq==nullptr and pi->_dret==nullptr and pi->_cent==nullptr){ // Hem passat el limit
         res = "";
         iguales = false;
@@ -236,15 +251,16 @@
       } else {
         //_anterior = _actual->_pare;
         if(pi->_esq!=nullptr && pi->_esq->_p.nom()!=_ultim){
-          p = pi->_esq->_p;
+          pi = pi->_esq;
+          res = pi->_p.nom();
+        } else if(pi->_dret!=nullptr && pi->_dret->_p.nom()!=_ultim){
+          pi = pi->_dret;
+          res = pi->_p.nom();
+        } else if(pi->_cent!=nullptr){
+          pi = pi->_cent;
+          res = pi->_p.nom();
         }
-        if(pi->_dret!=nullptr && pi->_dret->_p.nom()!=_ultim){
-          p2 = pi->_dret->_p;
-        }
-        if(pi->_cent!=nullptr && pi->_cent->_p.nom()!=_ultim){
-          p3 = pi->_cent->_p;
-        }
-        if(p >= p2 && p >= p3){
+        /*if(p >= p2 && p >= p3){
           res = p.nom();
           pi = pi->_esq;
         } else if(p2 >= p && p2 >= p3){
@@ -253,16 +269,19 @@
         } else {
           res = p3.nom();
           pi = pi->_cent;
-        }
+        }*/
       }
       if(res!=_ultim){
         iguales = false;
-        _actual = pi;
+        _actual = _anterior;
       } else {
         //pi = pi->_cent;
       }
     } 
     _ultim = res;
+    if(res!=""){
+      res.pop_back();
+    }
     return res;
   }
 
@@ -285,7 +304,8 @@
         _actual = _actual->_pare;
       }
       _prefix.pop_back();
-      res = _actual->_p.nom(); 
+      res = _actual->_p.nom();
+      res.pop_back(); 
       _ultim = res;
     } else {
       _indefinit = true;
@@ -333,8 +353,10 @@
           }
         } 
       } else {
-        if (t->_cent == nullptr) { // Comptem les paraules
-          result.push_back(t->_p.nom());
+        if (t->_cent == nullptr) { // Comptem les paraules, posible susbtitucion \000
+          string nom = t->_p.nom();
+          nom.pop_back();
+          result.push_back(nom);
         }
         prefix(t->_esq, i, s, result);
         prefix(t->_dret, i, s, result);

@@ -280,7 +280,7 @@ void call_registry::dump(vector<phone>& V) const throw(error) {
         node_taula* current = _taula[i];
         while (current != nullptr) {
             // Verificar que el nombre no sigui nul
-            if (current->_p.nom() != "") {
+            if (current->_p.nom()[0] != '\000') {
 				for(int j=0; j<V.size(); j++){
 					if(current->_p.nom()==V[j].nom()){
 						throw error(ErrNomRepetit);
