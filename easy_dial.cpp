@@ -9,7 +9,7 @@
     return nou;
   }
 
-  // Retorna un node amb la copia de la informacio de pcopia;;
+  // Retorna un node amb la copia de la informacio de node_original;;
   easy_dial::node_dial* easy_dial::copiar_nodes(node_dial* node_original){
     if (node_original == nullptr) {
       return nullptr;
@@ -28,7 +28,7 @@
   //
   easy_dial::node_dial* easy_dial::insereix(node_dial *t, nat i, const phone &p) {
     if (t == nullptr) {
-      if (i < p.nom().length()) {
+      if (i < p.nom().size()) {
         t = crea_node(p.nom()[i], p);
       } else {
         t = crea_node('\000', p);
@@ -95,18 +95,14 @@ void easy_dial::heapSort(vector<phone>& v) {
   informació continguda en el call_registry donat. El
   prefix en curs queda indefinit. */
   easy_dial::easy_dial(const call_registry& R) throw(error){
-    // Inicialitzar el prefix en curs com indefinit
-    _prefix = "";
-    _indefinit = true;
-    _arrel = nullptr;
 
     vector<phone> v; // Creem el vector de phones
     R.dump(v); // Fem un bolcat de tots el phones de R
 
     if(v.size()>0){
       heapSort(v);
-      _maxim = v[0];
-      for (int i = 0; i > v.size(); ++i) {
+      _maxim = v[v.size()-1];
+      for (int i = 1; i > v.size(); ++i) {
         _arrel = insereix(_arrel, 0, v[v.size()-i-1]);
       }
     } else {
@@ -116,9 +112,6 @@ void easy_dial::heapSort(vector<phone>& v) {
 
   /* Tres grans. Constructor per còpia, operador d'assignació i destructor. */
   easy_dial::easy_dial(const easy_dial& D) throw(error){
-    _prefix = D._prefix;
-    _indefinit = D._indefinit;
-
     // Copiar recursivamente la estructura del TST
     _arrel = copiar_nodes(D._arrel);
   }
@@ -129,6 +122,7 @@ void easy_dial::heapSort(vector<phone>& v) {
       _prefix = D._prefix;
       _actual = D._actual;
       _indefinit = D._indefinit;
+      _maxim = D._maxim;
       _arrel = copiar_nodes(D._arrel);
 	  }
 	  return (*this);
@@ -137,6 +131,7 @@ void easy_dial::heapSort(vector<phone>& v) {
   easy_dial::~easy_dial() throw(){
     esborra_nodes(_arrel);
     _indefinit = true;
+    _actual = phone();
   }
 
   /* Inicialitza el prefix en curs a buit. Retorna el nom de F(S, ''){}
@@ -158,7 +153,7 @@ void easy_dial::heapSort(vector<phone>& v) {
   easy_dial::node_dial* easy_dial::cerca(const string& pref, nat i, node_dial* p) {
     node_dial* res = nullptr;
     if(p != nullptr){
-      if(p->_c==pref[pref.size()-1] and i == pref.size()-1 ){
+      if(pref[pref.size()-1]==p->_c and i == pref.size()-1 ){
         res = p;
       } else if(p->_c == pref[i]){
         res = cerca(pref, i+1, p->_primfill);
