@@ -26,7 +26,7 @@
   }
 
   //
-  easy_dial::node_dial* easy_dial::insereix(node_dial *t, nat i, const phone &p) {
+  easy_dial::node_dial* easy_dial::insereix(node_dial* t, nat i, const phone &p) {
     if (t == nullptr) {
       if (i < p.nom().size()) {
         t = crea_node(p.nom()[i], p);
@@ -102,11 +102,13 @@ void easy_dial::heapSort(vector<phone>& v) {
     if(v.size()>0){
       heapSort(v);
       _maxim = v[v.size()-1];
-      for (int i = 1; i > v.size(); ++i) {
-        _arrel = insereix(_arrel, 0, v[v.size()-i-1]);
+      for (int i = 1; i < v.size(); ++i) {
+        _arrel = insereix(_arrel, 0, v[i]);
       }
     } else {
       _arrel = nullptr;
+      _maxim = phone();
+      _indefinit = true;
     }
   }
 
@@ -131,7 +133,6 @@ void easy_dial::heapSort(vector<phone>& v) {
   easy_dial::~easy_dial() throw(){
     esborra_nodes(_arrel);
     _indefinit = true;
-    _actual = phone();
   }
 
   /* Inicialitza el prefix en curs a buit. Retorna el nom de F(S, ''){}
