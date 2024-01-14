@@ -3,14 +3,9 @@
 struct node_dial { 
     char _c; // clau amb la informació del caracter actual
     phone _p; // informació associada a la clau _c
-    node_dial* _esq; // branca esquerra
-    node_dial* _dret; // branca dreta
-    node_dial* _cent; // branca central 
-    node_dial* _pare; // apuntador al pare del node
+    node_dial* _primfill; // branca fill
+    node_dial* _seggerma; // branca seguent
 };
-
-// Punter anterior en cas d'arribar al final
-node_dial* _anterior;
 
 // Punter a l'arrel de l'arbre
 node_dial* _arrel;
@@ -21,20 +16,14 @@ string _prefix;
 // Bolea utilitzat per controlar l'estat del prefix
 bool _indefinit;
 
-// punter al node de l'arbre que coincideix amb el prefix
-node_dial* _actual;
+// phone que conte la informació de l'actual
+phone _actual;
 
-// String on es guarda ultim nom mostrat
-string _ultim;
-
-//Suma de totes les frequencies
-int _freqTotal;
+// 
+phone _maxim;
 
 // Funció per crear nou nodes.
-static node_dial* crea_node(const char &c, phone p, node_dial* esq,node_dial* cen, node_dial* dre, node_dial* pare);
-
-// Funció per calcular l'index del _array.
-static int index(const char &c);
+static node_dial* crea_node(const char &c, phone p, node_dial* pref, node_dial* seg);
 
 // Retorna un node amb la copia de la informacio de pcopia;
 static node_dial* copiar_nodes(node_dial* node_original);
@@ -45,10 +34,20 @@ static void esborra_nodes(node_dial* p);
 // Insereix la clau p a l'arbre.
 static node_dial* insereix(node_dial* t, nat i, const phone &p);
 
+//
+static void prefix(node_dial* t, vector<string>& res);
+
+//
 static void prefix(node_dial* t, nat i, const string& s,  vector<string>& result);
 
-// Cerca ultima lletra.
-static void cerca_noms(node_dial* n, vector<string>& result);
-
 // Calcul de la longitud mitjana.
-static void mitjana(node_dial* t, int i, double &freq, const int &freqTotal);
+static void mitjana(node_dial* t, int i, double &freq, double &sumLong);
+
+//
+static void heapSort(vector<phone>& v);
+
+//
+static void heapify(vector<phone>& v, size_t n, size_t i);
+
+//
+static node_dial* cerca(const string& pref, nat i, node_dial* p);
