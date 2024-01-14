@@ -86,7 +86,7 @@
   }
 
   void easy_dial::cerca_noms(node_dial* n, vector<string>& result){
-    if(n->_esq==nullptr and n->_dret==nullptr and n->_cent==nullptr){ // Esto hay que cambiarlo por if(n->_c == caracter fi paraula)
+    if(n->_cent==nullptr){ 
       result.push_back(n->_p.nom());
     }
     if(n->_esq!=nullptr){
@@ -115,11 +115,13 @@
 
     if(v.size()>0){
       phone null;
-      _arrel = crea_node('0',null);
+      //_array = new string[v.size()];
       for (int i = 0; i < v.size(); ++i) {
         _freqTotal += v[i].frequencia();
         _arrel = insereix(_arrel, 0, v[i]);
+        //_array[i] = v[i].nom();
       }
+
     } else {
       _arrel = nullptr;
     }
@@ -190,13 +192,16 @@
   fos indefinit. */
   string easy_dial::seguent(char c) throw(error){
     string res;
-    if(_anterior!=nullptr){
+    if(_anterior!=nullptr and _ultim==""){
       _indefinit = true;
       throw error(ErrPrefixIndef);
     }
     if(_indefinit!=true and _actual!=nullptr){
       _prefix.push_back(c);
-      if(_actual->_cent!=nullptr and c == _actual->_cent->_c){
+      if(_actual->_c == c and c!='\000'){
+        _actual = _actual->_cent;
+        res = _actual->_p.nom();
+      } else if(_actual->_cent!=nullptr and c == _actual->_cent->_c){
         _actual = _actual->_cent;
         res = _actual->_p.nom();
       } else if(_actual->_dret!=nullptr and c == _actual->_dret->_c){
@@ -205,23 +210,59 @@
       } else if(_actual->_esq!=nullptr and c == _actual->_esq->_c){
         _actual = _actual->_esq;
         res = _actual->_p.nom();
-      } else if(_anterior!=nullptr){ // _anterior!=nullptr
-        _indefinit = true;
-        throw error(ErrPrefixIndef);
       } else {
         _anterior = _actual;
         res = "";
-      }
+      } 
     } else {
       _indefinit = true;
       throw error(ErrPrefixIndef);
     }
-    if(res==_ultim){
-      _anterior = _actual;
-      res = "";
-    } else if(res!=""){
-      _ultim = res;
+    bool iguales = (res==_ultim);
+    node_dial* pi(_actual);
+    if(iguales){
+      //_actual = _actual->_pare;
+      _anterior = _actual->_pare;
     }
+    //node_dial* pi(_actual);
+    while(iguales){
+      //_actual = _actual->_pare;
+      //_anterior = _actual->_pare;
+      phone p, p2, p3;
+      if(pi->_esq==nullptr and pi->_dret==nullptr and pi->_cent==nullptr){ // Hem passat el limit
+        res = "";
+        iguales = false;
+        //_anterior = _actual->_pare;
+      } else {
+        //_anterior = _actual->_pare;
+        if(pi->_esq!=nullptr && pi->_esq->_p.nom()!=_ultim){
+          p = pi->_esq->_p;
+        }
+        if(pi->_dret!=nullptr && pi->_dret->_p.nom()!=_ultim){
+          p2 = pi->_dret->_p;
+        }
+        if(pi->_cent!=nullptr && pi->_cent->_p.nom()!=_ultim){
+          p3 = pi->_cent->_p;
+        }
+        if(p >= p2 && p >= p3){
+          res = p.nom();
+          pi = pi->_esq;
+        } else if(p2 >= p && p2 >= p3){
+          res = p2.nom();
+          pi = pi->_dret;
+        } else {
+          res = p3.nom();
+          pi = pi->_cent;
+        }
+      }
+      if(res!=_ultim){
+        iguales = false;
+        _actual = pi;
+      } else {
+        //pi = pi->_cent;
+      }
+    } 
+    _ultim = res;
     return res;
   }
 
@@ -240,11 +281,12 @@
       } else if(_anterior!=nullptr){ // _anterior!=nullptr
         _actual = _anterior;
         _anterior = nullptr;
-      } else {
+      } else if(_actual->_pare!=nullptr){
         _actual = _actual->_pare;
       }
       _prefix.pop_back();
       res = _actual->_p.nom(); 
+      _ultim = res;
     } else {
       _indefinit = true;
       throw error(ErrPrefixIndef);
@@ -280,11 +322,15 @@
     if (t != NULL) {
       if (i < s.length()) { // Recorrem el prefix
         if (t->_c > s[i]) {
-          prefix(t->_esq, i, s, result);
+          prefix(t->_esq, i, s, result); 
         } else if (t->_c < s[i]) {
           prefix(t->_dret, i, s, result);
         } else if (t->_c == s[i]) { 
-          prefix(t->_cent, i+1, s, result);
+          if(t->_cent!=nullptr){
+            prefix(t->_cent, i+1, s, result);
+          } else {
+            prefix(t, i+1, s, result);
+          }
         } 
       } else {
         if (t->_cent == nullptr) { // Comptem les paraules
@@ -302,13 +348,13 @@
   void easy_dial::comencen(const string& pref, vector<string>& result) const throw(error){
     // Pre: s=S
     // Post: Modifica el vector afegint les claus del p.i. que tenen el prefix S
-    //string Prefix = pref;
-    //Prefix.push_back(phone::ENDCHAR);
+    /*
     if(_arrel!=nullptr){
       prefix(_arrel->_cent, 0, pref, result);
       prefix(_arrel->_esq, 0, pref, result);
       prefix(_arrel->_dret, 0, pref, result);
-    }
+    } */
+    prefix(_arrel, 0, pref, result);
   }
 
   /*void easy_dial::comencen(const string& pref, vector<string>& result) const throw(error){

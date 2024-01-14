@@ -5,6 +5,7 @@
         "xstring": "cpp",
         "iostream": "cpp",
         "*.rep": "cpp",
-        "error": "cpp"
+        "error": "cpp",
+        "gen_driver": "cpp"
     }
 }

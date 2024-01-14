@@ -12,7 +12,7 @@ struct node_dial {
 // Punter anterior en cas d'arribar al final
 node_dial* _anterior;
 
-// punter a l'arrel de l'arbre
+// Punter a l'arrel de l'arbre
 node_dial* _arrel;
 
 // Prefix utilitzat per fer la cerca dels noms.
@@ -26,9 +26,6 @@ node_dial* _actual;
 
 // String on es guarda ultim nom mostrat
 string _ultim;
-
-// array de punters a nodes
-//node_dial* _array[127];
 
 //Suma de totes les frequencies
 int _freqTotal;
