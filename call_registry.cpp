@@ -34,10 +34,80 @@ void call_registry::esborra_nodes(node_taula* p) {
 
 // Cost: θ(1)
 int call_registry::hash(const nat &x) {
-	//static long const MULT = 31415926;
-	//long y = ((x * x * MULT) << 20) >> 4;
-	//return y;
-	return x;
+static long const MULT = 31415926;
+	long i = (((x+1) * x * MULT) << 47) >> 7;
+	if (i < 0)
+		i = -i;
+	return i;
+}
+
+// Cost: θ(n), on n és el nombre de claus del call_registry
+void call_registry::redispersio(bool augmentar) {
+	node_taula **tantiga = _taula;
+	nat mida = _M;
+	if (augmentar) {
+		_taula = new node_taula*[2*_M+1];
+		_M = 2*_M+1; // assignem a _M la nova mida de la taula
+	}
+	else {
+		_taula = new node_taula*[_M/2];
+		_M = _M/2; // assignem a _M la nova mida de la taula
+	}
+	_nelem = 0; // resetegem la quantitat d'elements que té la taula
+	// Inicialitzem cada posició de la nova taula
+	// amb un punter a nullptr
+	for (int i=0; i < _M; ++i) {
+    _taula[i] = nullptr;
+  }
+	for (nat i=0; i<mida; ++i) {
+		node_taula *p = tantiga[i];
+		while (p != nullptr) {
+			insereix(p); // s'insereix una copia de p a la nova taula
+			p = p->_seg;
+		}
+	}
+}
+
+// Cost: θ(e), on e és el nombre d'elements de la llista simplement
+// encadenada que li correspon a pnode->_k
+void call_registry::insereix(node_taula *pnode) {
+	int i = hash(pnode->_k) % _M;
+	node_taula* t = _taula[i];
+	node_taula* pant = nullptr;
+	if (t == nullptr) {
+		string nom = pnode->_p.nom();
+		nat frequencia = pnode->_p.frequencia();
+		phone p(pnode->_k, nom, frequencia);
+		node_taula* nou = new node_taula;
+		nou->_p = p;
+		nou->_k = pnode->_k;
+		nou->_seg = nullptr;
+		_taula[i] = nou; 
+		++_nelem;
+	} 
+	else {
+		while (t != nullptr) {
+			pant = t;
+			t = t->_seg; 
+		}
+		string nom = pnode->_p.nom();
+		nat frequencia = pnode->_p.frequencia();
+		phone p(pnode->_k, nom, frequencia);
+		node_taula* nou = new node_taula;
+		nou->_p = p;
+		nou->_k = pnode->_k;
+		nou->_seg = nullptr;
+		t = nou; 
+		pant->_seg = t;
+		++_nelem;
+	}
+}
+
+// Cost: θ(1)
+float call_registry::factor_de_carrega() const {
+	float n = _nelem;
+	float m = _M;
+	return n/m;
 }
 
 // Cost: θ(1), perquè sempre es el mateix nombre
@@ -91,14 +161,16 @@ call_registry::~call_registry() throw() {
 	delete _taula;
 }
 
-// Cost: O(e), on e és el nombre d'elements de la llista simplement
+// Cost en el cas mig: O(e), on e és el nombre d'elements de la llista simplement
 // encadenada que li correspon a "num". Si els elements del call_registry
-// estan ben dispersos, en terme mig el cost del mètode és θ(1)
+// estan ben dispersos, en terme mig el cost del mètode és θ(1).
+// En el cas pitjor, si s'ha d'afegir un nou element al call_registry i això
+// provoca una redispersió, el cost del mètode serà de θ(n)
 void call_registry::registra_trucada(nat num) throw(error) {
 	int i = hash(num) % _M;
 	node_taula* t = _taula[i];
 	node_taula* pant = nullptr;
-	if(t==nullptr){
+	if(t == nullptr){
 		node_taula* nou = new node_taula;
 		phone p(num, "", 1);
 		nou->_p = p;
@@ -128,11 +200,20 @@ void call_registry::registra_trucada(nat num) throw(error) {
 			++_nelem;
 		}
 	}
+	float fc = factor_de_carrega();
+	if (fc > 0.8) {
+		redispersio(true);
+	}
+	else if (fc < 0.2) {
+		redispersio(false);
+	}
 }
 
 // Cost: O(e), on e és el nombre d'elements de la llista simplement
 // encadenada que li correspon a "num". Si els elements del call_registry
-// estan ben dispersos, en terme mig el cost del mètode és θ(1)
+// estan ben dispersos, en terme mig el cost del mètode és θ(1).
+// En el cas pitjor, si s'ha d'afegir un nou element al call_registry i això
+// provoca una redispersió, el cost del mètode serà de θ(n)
 void call_registry::assigna_nom(nat num, const string& name) throw(error) {
 	int i = hash(num) % _M;
 	node_taula* t = _taula[i];
@@ -170,11 +251,19 @@ void call_registry::assigna_nom(nat num, const string& name) throw(error) {
 			t->_p = p;
 		}
 	}
+	float fc = factor_de_carrega();
+	if (fc > 0.8) {
+		redispersio(true);
+	}
+	else if (fc < 0.2) {
+		redispersio(false);
+	}
 }
 
 // Cost: O(e), on e és el nombre d'elements de la llista simplement
 // encadenada que li correspon a "num". Si els elements del call_registry
-// estan ben dispersos, en terme mig el cost del mètode és θ(1)
+// estan ben dispersos, en terme mig el cost del mètode és θ(1).
+// En el cas pitjor, degut a la redispersió, el cost del mètode serà de θ(n)
 void call_registry::elimina(nat num) throw(error) {
 	nat i = hash(num) % _M;
 	node_taula *p = _taula[i], *ant=nullptr; 
@@ -197,6 +286,13 @@ void call_registry::elimina(nat num) throw(error) {
 		--_nelem; 
 	} else {
 		throw error(ErrNumeroInexistent);
+	}
+	float fc = factor_de_carrega();
+	if (fc > 0.8) {
+		redispersio(true);
+	}
+	else if (fc < 0.2) {
+		redispersio(false);
 	}
 }
 
