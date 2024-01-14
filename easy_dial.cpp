@@ -1,6 +1,6 @@
 #include "easy_dial.hpp"
 //
-  easy_dial::node_dial* easy_dial::crea_node(const char &c, phone p, node_dial* fill = nullptr, node_dial* germa = nullptr){
+  typename easy_dial::node_dial* easy_dial::crea_node(const char &c, phone p, node_dial* fill = nullptr, node_dial* germa = nullptr){
     node_dial* nou = new node_dial;
     nou->_c = c;
     nou->_p = p;
@@ -10,28 +10,35 @@
   }
 
   // Retorna un node amb la copia de la informacio de node_original;;
-  easy_dial::node_dial* easy_dial::copiar_nodes(node_dial* node_original){
+  typename easy_dial::node_dial* easy_dial::copiar_nodes(node_dial* node_original){
     if (node_original == nullptr) {
       return nullptr;
     }
-
     // Crear un nou node
-    node_dial* node_nou = crea_node(node_original->_c,node_original->_p);
-
-    // Copiem recursivament les breanques
-    node_nou->_primfill = copiar_nodes(node_original->_primfill);
-    node_nou->_seggerma = copiar_nodes(node_original->_seggerma);
-
+    //node_dial* node_nou = crea_node(node_original->_c,node_original->_p);
+    node_dial* node_nou = new node_dial;
+    try {
+      node_nou->_c = node_original->_c;
+      node_nou->_p = node_original->_p;
+      // Copiem recursivament les breanques
+      node_nou->_primfill = copiar_nodes(node_original->_primfill);
+      node_nou->_seggerma = copiar_nodes(node_original->_seggerma);
+    } catch(...){
+      delete node_nou;
+      throw;
+    }
     return node_nou;
   }
 
   //
-  easy_dial::node_dial* easy_dial::insereix(node_dial* t, nat i, const phone &p) {
+  typename easy_dial::node_dial* easy_dial::insereix(node_dial* t, nat i, const phone &p) {
     if (t == nullptr) {
       if (i < p.nom().size()) {
-        t = crea_node(p.nom()[i], p);
+        //t = crea_node(p.nom()[i], p);
+        t = crea_node(p.nom()[i],p);
       } else {
-        t = crea_node('\000', p);
+        t = crea_node('\000',p);
+        //t = crea_node('\000', p);
       }
     } else {
       //if(t->_p < p){
@@ -50,14 +57,15 @@
 
 // Esborra tots els elements del arbre apuntat per p
   void easy_dial::esborra_nodes(node_dial* p){
-    if(p!=nullptr){
+    if(p!=NULL){
       esborra_nodes(p->_primfill);
       esborra_nodes(p->_seggerma);
       delete p;
     }
   }
 
-  void easy_dial::heapify(vector<phone>& v, size_t n, size_t i) {
+  template< typename T>
+  void heapify(vector<T>& v, size_t n, size_t i) {
     size_t largest = i;
     size_t left = 2 * i + 1;
     size_t right = 2 * i + 2;
@@ -76,7 +84,8 @@
     }
 }
 
-void easy_dial::heapSort(vector<phone>& v) {
+template< typename T>
+void heapSort(vector<T>& v) {
   size_t n = v.size();
 
   // Construir un montículo (heap) máximo
@@ -99,17 +108,16 @@ void easy_dial::heapSort(vector<phone>& v) {
     vector<phone> v; // Creem el vector de phones
     R.dump(v); // Fem un bolcat de tots el phones de R
 
+    _arrel = nullptr;
+    _indefinit = true;
+    
     if(v.size()>0){
       heapSort(v);
       _maxim = v[v.size()-1];
       for (int i = 1; i < v.size(); ++i) {
         _arrel = insereix(_arrel, 0, v[i]);
       }
-    } else {
-      _arrel = nullptr;
-      _maxim = phone();
-      _indefinit = true;
-    }
+    } 
   }
 
   /* Tres grans. Constructor per còpia, operador d'assignació i destructor. */
@@ -144,9 +152,7 @@ void easy_dial::heapSort(vector<phone>& v) {
     if(_maxim.nom().size()>0){ 
       result = _maxim.nom();
       _actual = _maxim;
-    } else {
-      result = "";
-    }
+    } 
     return result;
   }
 
@@ -183,9 +189,9 @@ void easy_dial::heapSort(vector<phone>& v) {
         if(result != nullptr){
           res = result->_p.nom();
           _actual = result->_p;;
-        } //else {
-         // _actual = phone(); // Por obsrevar
-        //}
+        } else {
+         _actual = phone(); // Por obsrevar
+        }
       } else {
         _indefinit = true;
         throw error(ErrPrefixIndef);
@@ -215,7 +221,9 @@ void easy_dial::heapSort(vector<phone>& v) {
         } else if(result!=nullptr){
           res = result->_p.nom();
           _actual = result->_p;
-        } 
+        } else {
+          _actual = phone();
+        }
       } else {
         _indefinit = true;
         throw error(ErrNoHiHaAnterior);
@@ -279,7 +287,12 @@ void easy_dial::heapSort(vector<phone>& v) {
   void easy_dial::comencen(const string& pref, vector<string>& result) const throw(error){
     // Pre: s=S
     // Post: Modifica el vector afegint les claus del p.i. que tenen el prefix S
+    if(_maxim.nom().find(pref)==0 and _maxim.nom().size()>0){
+      result.push_back(_maxim.nom());
+    }
     prefix(_arrel, 0, pref, result);
+    heapSort(result);
+    
   }
 
   /* Retorna el número mitjà de pulsacions necessàries para obtenir un

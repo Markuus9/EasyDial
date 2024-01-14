@@ -6,6 +6,7 @@
         "iostream": "cpp",
         "*.rep": "cpp",
         "error": "cpp",
-        "gen_driver": "cpp"
+        "gen_driver": "cpp",
+        "functional": "cpp"
     }
 }

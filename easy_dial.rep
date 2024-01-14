@@ -23,16 +23,18 @@ phone _actual;
 phone _maxim;
 
 // Funció per crear nou nodes.
-static node_dial* crea_node(const char &c, phone p, node_dial* pref, node_dial* seg);
+node_dial* crea_node(const char &c, phone p, node_dial* pref, node_dial* seg);
 
-// Retorna un node amb la copia de la informacio de pcopia;
-static node_dial* copiar_nodes(node_dial* node_original);
+// Retorna un node amb la copia de la informacio de pcopia; node_dial* copiar_nodes(node_dial* node_original);
 
 // Esborra tots els elements del arbre.
 static void esborra_nodes(node_dial* p);
 
+//
+static node_dial* copiar_nodes(node_dial* node_original);
+
 // Insereix la clau p a l'arbre.
-static node_dial* insereix(node_dial* t, nat i, const phone &p);
+node_dial* insereix(node_dial* t, nat i, const phone &p);
 
 //
 static void prefix(node_dial* t, vector<string>& res);
@@ -44,10 +46,4 @@ static void prefix(node_dial* t, nat i, const string& s,  vector<string>& result
 static void mitjana(node_dial* t, int i, double &freq, double &sumLong);
 
 //
-static void heapSort(vector<phone>& v);
-
-//
-static void heapify(vector<phone>& v, size_t n, size_t i);
-
-//
-static node_dial* cerca(const string& pref, nat i, node_dial* p);
+node_dial* cerca(const string& pref, nat i, node_dial* p);
