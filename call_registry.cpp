@@ -6,16 +6,21 @@ call_registry::node_taula* call_registry::copia_nodes(node_taula* pcopia) {
 	node_taula *p = nullptr, *pant = nullptr, *pprimer = nullptr;
 	while (pcopia != nullptr) {
 		p = new node_taula;
-		p->_k = pcopia->_k;
-		p->_p = pcopia->_p;
-		if (pant != nullptr) {
-			pant->_seg = p;
+		try {
+		  p->_k = pcopia->_k;
+		  p->_p = pcopia->_p;
+		  if (pant != nullptr) {
+			  pant->_seg = p;
+		  }
+		  pant = p;
+		  if (pprimer == nullptr) {
+			  pprimer = p;
+		  }
+		  pcopia = pcopia->_seg;
+		} catch (...) {
+		  delete p;
+		  throw;
 		}
-		pant = p;
-		if (pprimer == nullptr) {
-			pprimer = p;
-		}
-		pcopia = pcopia->_seg;
 	}
 	if (p != nullptr) {
 		p->_seg = nullptr;
@@ -66,6 +71,7 @@ void call_registry::redispersio(bool augmentar) {
 			p = p->_seg;
 		}
 	}
+	delete[] tantiga;
 }
 
 // Cost: θ(e), on e és el nombre d'elements de la llista simplement
@@ -79,11 +85,16 @@ void call_registry::insereix(node_taula *pnode) {
 		nat frequencia = pnode->_p.frequencia();
 		phone p(pnode->_k, nom, frequencia);
 		node_taula* nou = new node_taula;
-		nou->_p = p;
-		nou->_k = pnode->_k;
-		nou->_seg = nullptr;
-		_taula[i] = nou; 
-		++_nelem;
+		try {
+		  nou->_p = p;
+		  nou->_k = pnode->_k;
+		  nou->_seg = nullptr;
+		  _taula[i] = nou; 
+		  ++_nelem;
+		} catch (...){
+		  delete nou;
+		  throw;
+		}
 	} 
 	else {
 		while (t != nullptr) {
@@ -94,12 +105,17 @@ void call_registry::insereix(node_taula *pnode) {
 		nat frequencia = pnode->_p.frequencia();
 		phone p(pnode->_k, nom, frequencia);
 		node_taula* nou = new node_taula;
-		nou->_p = p;
-		nou->_k = pnode->_k;
-		nou->_seg = nullptr;
-		t = nou; 
-		pant->_seg = t;
-		++_nelem;
+		try {
+		  nou->_p = p;
+		  nou->_k = pnode->_k;
+		  nou->_seg = nullptr;
+		  t = nou; 
+		  pant->_seg = t;
+		  ++_nelem;
+		} catch (...){
+		  delete nou;
+		  throw;
+		}
 	}
 }
 
@@ -115,20 +131,30 @@ float call_registry::factor_de_carrega() const {
 call_registry::call_registry() throw(error) {
 	_M = 5;
 	_nelem = 0;
-  	_taula = new node_taula*[_M];
-  	for (int i=0; i < _M; ++i) {
+	_taula = new node_taula*[_M];
+	try {
+	  for (int i=0; i < _M; ++i) {
    	 _taula[i] = nullptr;
-  	}
+	  }
+	} catch (...){
+    delete[] _taula;
+    throw;
+	}
 }
 
 // Cost: θ(n), on n és el nombre de claus que té el
 // call_registry R
 call_registry::call_registry(const call_registry& R) throw(error) {
-	_M = R._M;
-	_nelem = R._nelem;
-	_taula = new node_taula*[_M];
-	for (int i = 0; i<_M; ++i) {
-		_taula[i] = copia_nodes(R._taula[i]);
+  try {
+	  _M = R._M;
+	  _nelem = R._nelem;
+	  _taula = new node_taula*[_M];
+	  for (int i = 0; i<_M; ++i) {
+		  _taula[i] = copia_nodes(R._taula[i]);
+	  }
+	} catch (...) {
+	  delete[] _taula;
+	  throw;
 	}
 }
 
@@ -140,14 +166,19 @@ call_registry& call_registry::operator=(const call_registry& R) throw(error) {
 		for (int i=0; i<_M; ++i) {
 			esborra_nodes(_taula[i]);
 		}
-		delete _taula;
+		delete[] _taula;
 		_M = R._M;
 		_nelem = R._nelem;
 		int mida = _M;
 		_taula = new node_taula*[mida];
-		for (int i=0; i<mida; ++i) {
-			_taula[i] = copia_nodes(R._taula[i]);
-		}
+		try {
+		  for (int i=0; i<mida; ++i) {
+			  _taula[i] = copia_nodes(R._taula[i]);
+		  }
+		} catch (...) {
+	    delete[] _taula;
+	    throw;
+	  }
 	}
 	return (*this);
 }
@@ -158,7 +189,7 @@ call_registry::~call_registry() throw() {
 	for (int i=0; i < _M; ++i) {
 		esborra_nodes(_taula[i]);
 	}
-	delete _taula;
+	delete[] _taula;
 }
 
 // Cost en el cas mig: O(e), on e és el nombre d'elements de la llista simplement
@@ -172,12 +203,17 @@ void call_registry::registra_trucada(nat num) throw(error) {
 	node_taula* pant = nullptr;
 	if(t == nullptr){
 		node_taula* nou = new node_taula;
-		phone p(num, "", 1);
-		nou->_p = p;
-		nou->_k = num;
-		nou->_seg = nullptr;
-		_taula[i] = nou; 
-		++_nelem;
+		try {
+		  phone p(num, "", 1);
+		  nou->_p = p;
+		  nou->_k = num;
+		  nou->_seg = nullptr;
+		  _taula[i] = nou; 
+		  ++_nelem;
+		} catch (...) {
+	    delete nou;
+	    throw;
+	  }
 	} else {
 		bool hi_es = false;
 		while (t != nullptr and not hi_es) {
@@ -191,6 +227,7 @@ void call_registry::registra_trucada(nat num) throw(error) {
 		}
 		if(not hi_es){
 			node_taula* nou = new node_taula;
+			try {
 			phone p(num, "", 1);
 			nou->_p = p;
 			nou->_k = num;
@@ -198,7 +235,11 @@ void call_registry::registra_trucada(nat num) throw(error) {
 			t = nou; 
 			pant->_seg = t;
 			++_nelem;
-		}
+		} catch (...) {
+	    delete nou;
+	    throw;
+	  }
+	}
 	}
 	float fc = factor_de_carrega();
 	if (fc > 0.8) {
@@ -220,12 +261,17 @@ void call_registry::assigna_nom(nat num, const string& name) throw(error) {
 	node_taula* pant = nullptr;
 	if(t==nullptr){
 		node_taula* nou = new node_taula;
-		phone p(num, name, 0);
-		nou->_p = p;
-		nou->_k = num;
-		nou->_seg = nullptr;
-		_taula[i] = nou; 
-		++_nelem;
+		try {
+		  phone p(num, name, 0);
+		  nou->_p = p;
+		  nou->_k = num;
+		  nou->_seg = nullptr;
+		  _taula[i] = nou; 
+		  ++_nelem;
+		} catch (...){
+		  delete nou;
+		  throw;
+		}
 	} else {
 		bool hi_es = false;
 		while (t != nullptr and not hi_es) {
@@ -238,13 +284,18 @@ void call_registry::assigna_nom(nat num, const string& name) throw(error) {
 		}
 		if(not hi_es){
 			node_taula* nou = new node_taula;
-			phone p(num, name, 0);
-			nou->_p = p;
-			nou->_k = num;
-			nou->_seg = nullptr;
-			t = nou; 
-			pant->_seg = t;
-			++_nelem;
+			try {
+			  phone p(num, name, 0);
+			  nou->_p = p;
+			  nou->_k = num;
+			  nou->_seg = nullptr;
+			  t = nou; 
+			  pant->_seg = t;
+			  ++_nelem;
+			} catch (...){
+		    delete nou;
+		    throw;
+		  }
 		} else {
 			nat freq = t->_p.frequencia();
 			phone p(num, name, freq);

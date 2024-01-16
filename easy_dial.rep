@@ -1,10 +1,10 @@
-// easy_dial serà representat mitjançant arbre binari de cerca.
 
 struct node_dial { 
     char _c; // clau amb la informació del caracter actual
     phone _p; // informació associada a la clau _c
     node_dial* _primfill; // branca fill
     node_dial* _seggerma; // branca seguent
+    node_dial* _pare; // punter al pare
 };
 
 // Punter a l'arrel de l'arbre
@@ -16,34 +16,40 @@ string _prefix;
 // Bolea utilitzat per controlar l'estat del prefix
 bool _indefinit;
 
-// phone que conte la informació de l'actual
-phone _actual;
+// node que conte la informació de l'actual
+node_dial* _actual;
 
-// 
-phone _maxim;
+// Ultim nom mostrat
+string _ultim;
+
+// Guarda el telefon més gran
+node_dial* _maxim;
 
 // Funció per crear nou nodes.
-node_dial* crea_node(const char &c, phone p, node_dial* pref, node_dial* seg);
-
-// Retorna un node amb la copia de la informacio de pcopia; node_dial* copiar_nodes(node_dial* node_original);
+node_dial* crea_node(const char &c, phone p, node_dial* pref, node_dial* seg, node_dial* pare);
 
 // Esborra tots els elements del arbre.
 static void esborra_nodes(node_dial* p);
 
-//
+// Fa una copia de node_original a p.i
 static node_dial* copiar_nodes(node_dial* node_original);
 
 // Insereix la clau p a l'arbre.
 node_dial* insereix(node_dial* t, nat i, const phone &p);
 
-//
-static void prefix(node_dial* t, vector<string>& res);
-
-//
-static void prefix(node_dial* t, nat i, const string& s,  vector<string>& result);
+// Modifica el vector afegint les claus del p.i. que tenen el prefix s
+static void prefix(node_dial* t, const string& pref,  vector<string>& result);
 
 // Calcul de la longitud mitjana.
 static void mitjana(node_dial* t, int i, double &freq, double &sumLong);
 
-//
+// Cerca el nom amb prefix pref
 node_dial* cerca(const string& pref, nat i, node_dial* p);
+
+// Algoritme d'ordenació
+template<typename T>
+static void heapify(vector<T>& v, size_t n, size_t i);
+
+// Algoritme d'ordenació
+template<typename T>
+static void heapSort(vector<T>& v);
