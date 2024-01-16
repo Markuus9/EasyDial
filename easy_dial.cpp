@@ -42,7 +42,6 @@ easy_dial::easy_dial(const easy_dial& D) throw(error) {
   try{
     _actual = D._actual;
     _indefinit = D._indefinit;
-    esborra_nodes(_maxim);
     _maxim = copiar_nodes(D._maxim);
     _prefix=D._prefix;
     _arrel = copiar_nodes(D._arrel);

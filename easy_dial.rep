@@ -16,7 +16,7 @@ string _prefix;
 // Bolea utilitzat per controlar l'estat del prefix
 bool _indefinit;
 
-// node que conte la informació de l'actual
+// Node que conte la informació de l'actual
 node_dial* _actual;
 
 // Ultim nom mostrat
@@ -25,7 +25,7 @@ string _ultim;
 // Guarda el telefon més gran
 node_dial* _maxim;
 
-// Funció per crear nou nodes.
+// Funció per crear nous nodes.
 node_dial* crea_node(const char &c, phone p, node_dial* pref, node_dial* seg, node_dial* pare);
 
 // Pre: p apunta a nullptr o a un subarbre del easy_dial
@@ -48,7 +48,10 @@ node_dial* insereix(node_dial* t, nat i, const phone &p);
 static void prefix(node_dial* t, const string& pref,  vector<string>& result);
 
 // Pre: t apunta a un subarbre del easy_dial o a nullptr
-// Calcul de la longitud mitjana.
+// Post: sumLong ha sigut modificat de manera que ara conté la suma total de totes les
+// frequencies dels phones dintre de easy_dial, i
+// fre ha sigut modificat de manera que ara conté la suma total de les 
+// pulsacions*frequencia de cada telefón
 static void mitjana(node_dial* t, int i, double &freq, double &sumLong);
 
 // Pre: p apunta a un subarbre del easy_dial o a nullptr
