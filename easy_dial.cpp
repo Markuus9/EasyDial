@@ -83,7 +83,7 @@ void easy_dial::esborra_nodes(node_dial *n){
   }
 }
 
-// Cost: θ(n), o n és el nombre de nodes del easy_dial
+// Cost: θ(n), on n és el nombre de nodes del easy_dial
 easy_dial::~easy_dial() throw() {
   esborra_nodes(_arrel);
   esborra_nodes(_maxim);
@@ -253,7 +253,7 @@ void easy_dial::prefix(node_dial* t, const string& pref,  vector<string>& result
   }
 }
 
-// Cost: θ(n)
+// Cost: θ(n), on n és el nombre de nodes del easy_dial
 double easy_dial::longitud_mitjana() const throw(){
   double res = 0, sumLong = 0;
   if(_maxim!=nullptr){
