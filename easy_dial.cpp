@@ -1,5 +1,6 @@
 #include "easy_dial.hpp"
 
+// Cost: θ(1)
 typename easy_dial::node_dial* easy_dial::crea_node(const char &c, phone p, node_dial* fill = nullptr, 
 node_dial* germa = nullptr, node_dial* pare = nullptr)
 {
@@ -12,7 +13,8 @@ node_dial* germa = nullptr, node_dial* pare = nullptr)
   return nou;
 }
 
-
+// Cost: θ(e), on e és el nombre d'elements que pengen del node_dial apuntat per
+// node_original (comptant també aquest node_dial)
 typename easy_dial::node_dial* easy_dial::copiar_nodes(node_dial *node_original){
   if (node_original == nullptr) {
     return nullptr;
@@ -35,6 +37,7 @@ typename easy_dial::node_dial* easy_dial::copiar_nodes(node_dial *node_original)
 }
 
 /* Tres grans. Constructor per còpia, operador d'assignació i destructor. */
+// Cost: ???
 easy_dial::easy_dial(const easy_dial& D) throw(error) {
   try{
     _actual = D._actual;
@@ -48,6 +51,7 @@ easy_dial::easy_dial(const easy_dial& D) throw(error) {
   }
 }
 
+// Cost: ???
 easy_dial& easy_dial::operator=(const easy_dial& D) throw(error) {
   try {
     if(this != &D){
@@ -65,6 +69,8 @@ easy_dial& easy_dial::operator=(const easy_dial& D) throw(error) {
   return(*this);
 }
 
+// Cost: θ(e), on e és el nombre d'elements que pengen del
+// node_dial n (comptant també aquest node_dial)
 void easy_dial::esborra_nodes(node_dial *n){
   try{
     if (n != NULL) {
@@ -77,6 +83,7 @@ void easy_dial::esborra_nodes(node_dial *n){
   }
 }
 
+// Cost: ???
 easy_dial::~easy_dial() throw() {
   esborra_nodes(_arrel);
   esborra_nodes(_maxim);
@@ -84,6 +91,7 @@ easy_dial::~easy_dial() throw() {
   _indefinit = true;
 }
 
+// Cost: θ(l), on l és la quantitat mitjana de símbols que té el nom del paràmetre phone p
 typename easy_dial::node_dial* easy_dial::insereix(node_dial* t, nat i, const phone &p)  {
   if (t == nullptr) {
     if (i < p.nom().size()) {
@@ -111,6 +119,8 @@ typename easy_dial::node_dial* easy_dial::insereix(node_dial* t, nat i, const ph
 /* Construeix un easy_dial a partir de la 
 informació continguda en el call_registry donat. El
 prefix en curs queda indefinit. */
+// Cost: θ(n^2), on n és el nombre d'elements que té el
+// call_registry R
 easy_dial::easy_dial(const call_registry& R) throw(error) {
   vector<phone> v; // Creem un vector de phones
   R.dump(v); // Fem un bolcat dels phones
@@ -280,6 +290,8 @@ void easy_dial::mitjana(node_dial* t, int i, double &freq, double &sumLong){
   }
 }
 
+ // Cost: θ(log(n/i)), on i és la posició i-èssima del
+ // vector v i n és el nombre d'elements de v
  template<typename T>
   void easy_dial::heapify(vector<T>& v, size_t n, size_t i) {
     size_t largest = i;
@@ -300,16 +312,18 @@ void easy_dial::mitjana(node_dial* t, int i, double &freq, double &sumLong){
     }
 }
 
+// Cost: θ(n*log(n)), on n és el nombre
+// d'elements del vector v
 template<typename T>
 void easy_dial::heapSort(vector<T>& v) {
   size_t n = v.size();
 
-  // Construir un montículo (heap) máximo
+  // Construir un montícle (heap) màxim
   for (int i = n / 2 - 1; i >= 0; --i) {
     heapify(v, n, i);
   }
 
-  // Extraer elementos del montículo uno por uno
+  // Extreure elements del monticle un per un
   for (int i = n - 1; i > 0; --i) {
     swap(v[0], v[i]);
     heapify(v, i, 0);
