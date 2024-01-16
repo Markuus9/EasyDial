@@ -28,22 +28,31 @@ node_dial* _maxim;
 // Funció per crear nou nodes.
 node_dial* crea_node(const char &c, phone p, node_dial* pref, node_dial* seg, node_dial* pare);
 
-// Esborra tots els elements del arbre.
+// Pre: p apunta a nullptr o a un subarbre del easy_dial
+// Post: Esborra tots els elements del arbre.
 static void esborra_nodes(node_dial* p);
 
-// Fa una copia de node_original a p.i
+// Pre: node_original apunta a un subarbre del easy_dial 
+// o a nullptr
+// Post: Fa una copia del subarbre apuntat per node_original
+// i retorna l'arrel d'aquest subarbre
 static node_dial* copiar_nodes(node_dial* node_original);
 
-// Insereix la clau p a l'arbre.
+// Pre: t apunta a un subarbre del easy_dial o a nullptr
+// Post: Insereix la clau p al subarbre apuntat per t
 node_dial* insereix(node_dial* t, nat i, const phone &p);
 
-// Modifica el vector afegint les claus del p.i. que tenen el prefix s
+// Pre: t apunta a un subarbre del easy_dial o a nullptr
+// Post: Modifica el vector result afegint les claus del subarbre apuntat per t
+// que tenen el prefix s
 static void prefix(node_dial* t, const string& pref,  vector<string>& result);
 
+// Pre: t apunta a un subarbre del easy_dial o a nullptr
 // Calcul de la longitud mitjana.
 static void mitjana(node_dial* t, int i, double &freq, double &sumLong);
 
-// Cerca el nom amb prefix pref
+// Pre: p apunta a un subarbre del easy_dial o a nullptr
+// Post: Cerca el nom amb prefix pref al subarbre apuntat per p
 node_dial* cerca(const string& pref, nat i, node_dial* p);
 
 // Algoritme d'ordenació
