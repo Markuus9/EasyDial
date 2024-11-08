@@ -1,4 +1,4 @@
-# DIAL - Agenda de Contactos en C++
+# EasyDial - Agenda de Contactos en C++
 
 ## Descripción del Proyecto
 **DIAL** es una aplicación de consola escrita en C++ para gestionar una agenda de contactos. El proyecto destaca por su uso de algoritmos avanzados y estructuras de datos sofisticadas, incluyendo árboles binarios, ordenamiento con Quick Sort, tablas hash, etc. Para ofrecer una solución eficiente y optimizada. Este sistema de agenda permite a los usuarios almacenar, buscar, ordenar y eliminar contactos de manera rápida y eficaz.
