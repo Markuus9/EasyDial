@@ -9,9 +9,7 @@
 - [Requisitos Previos](#requisitos-previos)
 - [Instalación](#instalación)
 - [Uso](#uso)
-- [Ejemplos](#ejemplos)
-- [Contribuciones](#contribuciones)
-
+- 
 ## Características
 - **Búsqueda rápida y eficiente** de contactos mediante tablas hash y recorridos de árboles.
 - **Ordenamiento de contactos** usando el algoritmo de Quick Sort para búsquedas optimizadas.
@@ -25,12 +23,14 @@ El proyecto DIAL implementa varias estructuras de datos y algoritmos avanzados e
 ### Árboles Binarios
 - **Implementación mediante punteros:** Cada nodo del árbol contiene punteros hacia sus nodos hijos y los hijos a los nodos padres, permitiendo una organización eficiente y fácil navegación.
 - **Recorridos del árbol:** Preorden, Inorden, y Postorden para diferentes tipos de consultas y visualización de datos.
+- **Inserción, consulta y eliminación eficiente:** El coste de la inserción, eliminación, y consulta es bajo gracias a la implementación estratégica de los árboles y las tablas de hash, siempre respetando el orden establecido.
 
 ### Quick Sort
 - **Ordenamiento eficiente** de contactos para mejorar la velocidad de búsqueda y visualización, logrando una complejidad promedio de O(n log n).
 
 ### Tablas Hash
 - **Tablas de hash y mapas hash (HashMap):** Implementación de tablas hash para almacenar contactos con eficiencia en el tiempo de búsqueda, logrando acceso promedio en O(1).
+- **Redispersion de la tabla de hash en caso de acumulación de elementos**
 
 ## Requisitos Previos
 - **C++11 o superior:** Asegúrese de tener un compilador compatible (como GCC o Clang).
@@ -41,9 +41,12 @@ El proyecto DIAL implementa varias estructuras de datos y algoritmos avanzados e
    ```bash
    git clone https://github.com/Markuus9/EasyDial.git
    cd EasyDial
-## Run
+   cp /incl /lib /home/$USER
+   
+## Uso
   ```bash
    #compile
    make
    #run
-  ./algo
+  ./driver_easydial.exe
+   #USA EL COMANDO "help" para obtener ayuda sobre el uso.
